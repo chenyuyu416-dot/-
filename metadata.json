@@ -1,0 +1,8 @@
+{
+  "name": "搭搭 (Dādā)",
+  "description": "A comprehensive social app to find partners for studying, competitions, career development, volunteering, and hobbies. Features AI-powered assistance, progress tracking, and robust communication tools.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
