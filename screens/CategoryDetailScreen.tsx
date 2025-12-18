@@ -13,23 +13,8 @@ interface CategoryDetailScreenProps {
   category: Category;
   onBack: () => void;
   onStartCall: () => void;
+  onSendApplication: (post: Post) => void;
 }
-
-const FilterBar: React.FC = () => {
-    const filters = ['目标', '学习时间', '地点', '基础水平', '监督强度'];
-    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
-
-    const toggleFilter = (filter: string) => {
-        alert(`筛选功能模拟: 切换 "${filter}" 筛选.`);
-        setActiveFilters(prev => ({...prev, [filter]: !prev[filter]}));
-    };
-
-    return (
-        <div className="flex space-x-2 overflow-x-auto pb-2 -mx-4 px-4 mb-4">
-            {filters.map(f => <button key={f} onClick={() => toggleFilter(f)} className={`px-3 py-1 text-xs border rounded-full whitespace-nowrap transition-colors ${activeFilters[f] ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white'}`}>{f} ▼</button>)}
-        </div>
-    );
-};
 
 const PostCard: React.FC<{ post: Post, onApply: (post:Post) => void }> = ({ post, onApply }) => (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
@@ -103,7 +88,7 @@ const VolunteerCard: React.FC<{ activity: VolunteerActivity, onSignUp: (activity
 );
 
 
-const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, onBack, onStartCall }) => {
+const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, onBack, onStartCall, onSendApplication }) => {
     const [activeScene, setActiveScene] = useState(category.scenes[0].id);
     const [activeCompetition, setActiveCompetition] = useState<Competition | null>(null);
     const [isInterviewPrepOpen, setInterviewPrepOpen] = useState(false);
@@ -111,37 +96,50 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
     const [isSelectResumeModalOpen, setSelectResumeModalOpen] = useState(false);
     const [activeVolunteerActivity, setActiveVolunteerActivity] = useState<VolunteerActivity | null>(null);
 
-    const relevantPosts = DUMMY_POSTS.filter(p => p.category === category.id);
-    
     const renderContent = () => {
+        const relevantPosts = DUMMY_POSTS.filter(p => p.category === category.id && p.sceneId === activeScene);
+        const relevantCompetitions = DUMMY_COMPETITIONS.filter(c => c.sceneId === activeScene);
+        const relevantJobs = DUMMY_JOBS.filter(j => j.sceneId === activeScene);
+        const relevantActivities = DUMMY_VOLUNTEER_ACTIVITIES.filter(v => v.sceneId === activeScene);
+        
+        let content;
+
         switch(category.id) {
             case 'study':
-                return <>
-                    <FilterBar />
-                    {relevantPosts.map(post => <PostCard key={post.id} post={post} onApply={setApplyingToPost} />)}
-                </>;
             case 'hobby':
-                 return relevantPosts.map(post => <PostCard key={post.id} post={post} onApply={setApplyingToPost} />);
+                content = relevantPosts.map(post => <PostCard key={post.id} post={post} onApply={setApplyingToPost} />);
+                break;
             case 'competition':
-                return DUMMY_COMPETITIONS.map(comp => <CompetitionCard key={comp.id} comp={comp} onClick={() => setActiveCompetition(comp)} />);
+                content = relevantCompetitions.map(comp => <CompetitionCard key={comp.id} comp={comp} onClick={() => setActiveCompetition(comp)} />);
+                break;
             case 'career':
-                return <>
+                content = <>
                     <button onClick={() => setInterviewPrepOpen(true)} className="w-full flex items-center justify-center gap-2 p-3 mb-4 bg-white rounded-lg shadow font-semibold text-indigo-600 hover:bg-gray-50">
                         <Briefcase className="w-5 h-5"/>
                         <span>面试模拟</span>
                     </button>
-                    {DUMMY_JOBS.map(job => <JobCard key={job.id} job={job} onApply={() => setSelectResumeModalOpen(true)} />)}
+                    {relevantJobs.map(job => <JobCard key={job.id} job={job} onApply={() => setSelectResumeModalOpen(true)} />)}
                 </>;
+                break;
             case 'volunteer':
-                return DUMMY_VOLUNTEER_ACTIVITIES.map(act => <VolunteerCard key={act.id} activity={act} onSignUp={setActiveVolunteerActivity}/>);
+                content = relevantActivities.map(act => <VolunteerCard key={act.id} activity={act} onSignUp={setActiveVolunteerActivity}/>);
+                break;
             default:
-                return <p>暂无内容</p>;
+                content = <p className="text-center text-gray-500 mt-8">暂无内容</p>;
         }
+
+        // Handle empty states
+        if (Array.isArray(content) && content.length === 0) {
+            return <p className="text-center text-gray-500 mt-8">该分类下暂无内容</p>;
+        }
+        return content;
     };
 
     const handleSendApplication = () => {
-        alert('发送申请成功！');
-        setApplyingToPost(null);
+        if(applyingToPost) {
+            onSendApplication(applyingToPost);
+            setApplyingToPost(null);
+        }
     }
 
     return (

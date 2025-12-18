@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User } from '../types';
-import { ShieldCheck, Award, Settings, BookOpen, Trophy, File } from '../components/Icons';
+import { ShieldCheck, Award, Settings, BookOpen, Trophy, File, HelpCircle } from '../components/Icons';
 
 interface ProfileScreenProps {
     user: User;
@@ -12,9 +12,10 @@ interface ProfileScreenProps {
     onBadgesClick: () => void;
     onCertificationClick: () => void;
     onUploadResumeClick: () => void;
+    onFeedbackClick: () => void;
 }
 
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSettingsClick, onMyStuffClick, onEditTagsClick, onBadgesClick, onCertificationClick, onUploadResumeClick }) => {
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSettingsClick, onMyStuffClick, onEditTagsClick, onBadgesClick, onCertificationClick, onUploadResumeClick, onFeedbackClick }) => {
     const stats = [
         { label: '搭力值', value: 1258, key: 'points' },
         { label: '搭子', value: 12, key: 'partners' },
@@ -102,6 +103,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSetting
                              <span className="text-sm">技能认证 (未认证)</span>
                            </div>
                         </div>
+                    </button>
+                     <button onClick={onFeedbackClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
+                        <h3 className="font-bold text-gray-800 mb-3">问题反馈</h3>
+                         <div className="flex items-center text-gray-600">
+                             <HelpCircle className="w-5 h-5 mr-2"/>
+                             <span className="text-sm">反馈问题或联系客服</span>
+                         </div>
                     </button>
                 </div>
                 

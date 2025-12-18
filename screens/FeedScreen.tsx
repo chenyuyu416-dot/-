@@ -1,11 +1,15 @@
 
 import React, { useState } from 'react';
-import { DUMMY_POSTS } from '../constants';
 import { Post as PostType } from '../types';
 import { Heart, MessageSquare, MoreVertical, Plus } from '../components/Icons';
 import PostDetailModal from '../components/PostDetailModal';
 
-const Post: React.FC<{ post: PostType; onClick: () => void }> = ({ post, onClick }) => {
+interface PostCardProps {
+    post: PostType; 
+    onClick: () => void;
+}
+
+const PostCard: React.FC<PostCardProps> = ({ post, onClick }) => {
     return (
         <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
             <div className="p-4" onClick={onClick}>
@@ -44,8 +48,12 @@ const Post: React.FC<{ post: PostType; onClick: () => void }> = ({ post, onClick
     );
 };
 
+interface FeedScreenProps {
+    posts: PostType[];
+    onPostCreate: () => void;
+}
 
-const FeedScreen: React.FC<{onPostCreate: () => void}> = ({onPostCreate}) => {
+const FeedScreen: React.FC<FeedScreenProps> = ({ posts, onPostCreate }) => {
     const [activePost, setActivePost] = useState<PostType | null>(null);
 
     return (
@@ -57,8 +65,8 @@ const FeedScreen: React.FC<{onPostCreate: () => void}> = ({onPostCreate}) => {
                 </button>
             </header>
             <div className="p-4">
-                {DUMMY_POSTS.map(post => (
-                    <Post key={post.id} post={post} onClick={() => setActivePost(post)} />
+                {posts.map(post => (
+                    <PostCard key={post.id} post={post} onClick={() => setActivePost(post)} />
                 ))}
             </div>
             {activePost && <PostDetailModal post={activePost} onClose={() => setActivePost(null)} />}

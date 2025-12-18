@@ -47,6 +47,7 @@ export interface Post {
     id: string;
     author: User;
     category: string;
+    sceneId?: string;
     title: string;
     content: string;
     tags: string[];
@@ -58,6 +59,7 @@ export interface Post {
 
 export interface Competition {
     id: string;
+    sceneId?: string;
     name: string;
     category: string;
     deadline: string;
@@ -67,6 +69,7 @@ export interface Competition {
 
 export interface Job {
     id: string;
+    sceneId?: string;
     title: string;
     company: string;
     location: string;
@@ -77,6 +80,7 @@ export interface Job {
 
 export interface VolunteerActivity {
     id: string;
+    sceneId?: string;
     title: string;
     organization: string;
     location: string;
@@ -107,4 +111,12 @@ export interface TeamRequest {
     user: User;
     teamName: string;
     message: string;
+}
+
+export interface SentApplication {
+    id: string;
+    postTitle: string;
+    recipient: User;
+    status: 'pending' | 'accepted' | 'rejected';
+    timestamp: string;
 }

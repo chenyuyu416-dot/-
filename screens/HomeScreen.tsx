@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Category, User } from '../types';
 import { DUMMY_CATEGORIES } from '../constants';
 import { Wand2 } from '../components/Icons';
@@ -8,6 +8,7 @@ interface HomeScreenProps {
   user: User;
   onCategorySelect: (category: Category) => void;
   onAiButtonClick: () => void;
+  onSearch: (query: string) => void;
 }
 
 const CategoryCard: React.FC<{ category: Category, onClick: () => void }> = ({ category, onClick }) => {
@@ -34,7 +35,15 @@ const CategoryCard: React.FC<{ category: Category, onClick: () => void }> = ({ c
 };
 
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ user, onCategorySelect, onAiButtonClick }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ user, onCategorySelect, onAiButtonClick, onSearch }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+        onSearch(searchTerm.trim());
+    }
+  };
+
   return (
     <div className="h-full bg-gray-50">
         <header className="sticky top-0 bg-white/80 backdrop-blur-lg z-10 p-4 shadow-sm">
@@ -53,6 +62,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ user, onCategorySelect, onAiBut
                     type="text" 
                     placeholder="搜索搭子、活动或竞赛..." 
                     className="w-full px-4 py-2 bg-gray-100 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={handleSearch}
                 />
             </div>
         </header>

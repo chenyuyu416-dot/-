@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
-import { Page, User, Category } from './types';
-import { DUMMY_USERS } from './constants';
+import { Page, User, Category, Post, SentApplication } from './types';
+import { DUMMY_USERS, DUMMY_POSTS, DUMMY_SENT_APPLICATIONS } from './constants';
 import AuthScreen from './screens/AuthScreen';
 import HomeScreen from './screens/HomeScreen';
 import FeedScreen from './screens/FeedScreen';
@@ -21,11 +21,15 @@ import BadgesModal from './components/BadgesModal';
 import CertificationModal from './components/CertificationModal';
 import PartnerProfileModal from './components/PartnerProfileModal';
 import UploadResumeModal from './components/UploadResumeModal';
+import SearchScreen from './screens/SearchScreen';
+import FeedbackScreen from './screens/FeedbackScreen';
 
 const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [currentPage, setCurrentPage] = useState<Page>('home');
     const [currentUser, setCurrentUser] = useState<User>(DUMMY_USERS.currentUser);
+    const [posts, setPosts] = useState<Post[]>(DUMMY_POSTS);
+    const [sentApplications, setSentApplications] = useState<SentApplication[]>(DUMMY_SENT_APPLICATIONS);
     const [activeChat, setActiveChat] = useState<User | null>(null);
     const [activeCategory, setActiveCategory] = useState<Category | null>(null);
     const [isPosting, setIsPosting] = useState<boolean>(false);
@@ -39,6 +43,10 @@ const App: React.FC = () => {
     const [isCertificationModalOpen, setCertificationModalOpen] = useState(false);
     const [isUploadResumeModalOpen, setUploadResumeModalOpen] = useState(false);
     const [partnerProfile, setPartnerProfile] = useState<User | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+
 
     const handleLogin = useCallback(() => {
         setIsAuthenticated(true);
@@ -93,6 +101,28 @@ const App: React.FC = () => {
         setEditTagsModalOpen(false);
     };
 
+    const handleAddPost = (post: Post) => {
+        setPosts(prev => [post, ...prev]);
+        setIsPosting(false);
+    };
+
+    const handleSearch = (query: string) => {
+        setSearchQuery(query);
+        setIsSearching(true);
+    };
+
+    const handleSendApplication = (post: Post) => {
+        const newApplication: SentApplication = {
+            id: `sa${Date.now()}`,
+            postTitle: post.title,
+            recipient: post.author,
+            status: 'pending',
+            timestamp: '刚刚',
+        };
+        setSentApplications(prev => [newApplication, ...prev]);
+        alert('发送申请成功！');
+    };
+
     const renderModals = () => (
         <>
             {isEditTagsModalOpen && <EditTagsModal tags={currentUser.tags || []} onSave={handleSaveTags} onClose={() => setEditTagsModalOpen(false)} />}
@@ -111,7 +141,7 @@ const App: React.FC = () => {
             return <AIChatScreen onBack={() => setIsAIChatOpen(false)} />;
         }
         if (activeCategory) {
-            return <CategoryDetailScreen category={activeCategory} onBack={handleCloseCategory} onStartCall={handleStartCall} />;
+            return <CategoryDetailScreen category={activeCategory} onBack={handleCloseCategory} onStartCall={handleStartCall} onSendApplication={handleSendApplication} />;
         }
         if (isAiScreenOpen) {
             return <AIScreen onBack={() => setIsAiScreenOpen(false)} />;
@@ -122,14 +152,20 @@ const App: React.FC = () => {
         if (activeMyStuff) {
             return <MyStuffScreen view={activeMyStuff} onBack={() => setActiveMyStuff(null)} onPartnerClick={setPartnerProfile} />
         }
+        if (isSearching) {
+            return <SearchScreen query={searchQuery} onBack={() => setIsSearching(false)} />;
+        }
+        if (isFeedbackOpen) {
+            return <FeedbackScreen onBack={() => setIsFeedbackOpen(false)} />;
+        }
 
         switch (currentPage) {
             case 'home':
-                return <HomeScreen user={currentUser} onCategorySelect={handleOpenCategory} onAiButtonClick={() => setIsAiScreenOpen(true)} />;
+                return <HomeScreen user={currentUser} onCategorySelect={handleOpenCategory} onAiButtonClick={() => setIsAiScreenOpen(true)} onSearch={handleSearch} />;
             case 'feed':
-                return <FeedScreen onPostCreate={() => setIsPosting(true)} />;
+                return <FeedScreen posts={posts} onPostCreate={() => setIsPosting(true)} />;
             case 'messages':
-                return <MessagesScreen onChatSelect={handleOpenChat} />;
+                return <MessagesScreen onChatSelect={handleOpenChat} sentApplications={sentApplications} />;
             case 'profile':
                 return <ProfileScreen 
                     user={currentUser}
@@ -140,9 +176,10 @@ const App: React.FC = () => {
                     onBadgesClick={() => setBadgesModalOpen(true)}
                     onCertificationClick={() => setCertificationModalOpen(true)}
                     onUploadResumeClick={() => setUploadResumeModalOpen(true)}
+                    onFeedbackClick={() => setIsFeedbackOpen(true)}
                 />;
             default:
-                return <HomeScreen user={currentUser} onCategorySelect={handleOpenCategory} onAiButtonClick={() => setIsAiScreenOpen(true)} />;
+                return <HomeScreen user={currentUser} onCategorySelect={handleOpenCategory} onAiButtonClick={() => setIsAiScreenOpen(true)} onSearch={handleSearch} />;
         }
     };
 
@@ -160,7 +197,7 @@ const App: React.FC = () => {
                 {renderContent()}
             </main>
             {renderModals()}
-            <PostScreen isOpen={isPosting} onClose={() => setIsPosting(false)} />
+            <PostScreen isOpen={isPosting} onClose={() => setIsPosting(false)} onAddPost={handleAddPost} />
             <BottomNav 
                 currentPage={currentPage} 
                 onNavigate={handleNavigate} 

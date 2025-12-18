@@ -1,15 +1,20 @@
 
 import React, { useState } from 'react';
 import { X, Image, File, Video } from '../components/Icons';
-import { DUMMY_CATEGORIES } from '../constants';
+import { DUMMY_CATEGORIES, DUMMY_USERS } from '../constants';
+import { Post } from '../types';
 
 interface PostScreenProps {
   isOpen: boolean;
   onClose: () => void;
+  onAddPost: (post: Post) => void;
 }
 
-const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose }) => {
+const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost }) => {
   const [selectedCategory, setSelectedCategory] = useState(DUMMY_CATEGORIES[0].id);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [tags, setTags] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoName, setVideoName] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -31,6 +36,31 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose }) => {
         setImagePreview(null);
         setVideoName(null);
     }
+  };
+
+  const handleSubmit = () => {
+    if (!title.trim() || !content.trim()) {
+      alert('标题和内容不能为空！');
+      return;
+    }
+    const newPost: Post = {
+      id: `p${Date.now()}`,
+      author: DUMMY_USERS.currentUser,
+      category: selectedCategory,
+      title,
+      content,
+      tags: tags.split(/[,，\s]+/).filter(Boolean),
+      timestamp: '刚刚',
+      likes: 0,
+      comments: 0,
+      image: imagePreview || undefined,
+    };
+    onAddPost(newPost);
+    // Reset form
+    setTitle('');
+    setContent('');
+    setTags('');
+    setImagePreview(null);
   };
 
   if (!isOpen) return null;
@@ -65,6 +95,8 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose }) => {
             <input 
               type="text" 
               id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="一句话说清你的需求" 
               className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -75,6 +107,8 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose }) => {
             <textarea
               id="content"
               rows={5}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
               placeholder="详细说说你的目标、要求、计划等..."
               className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             ></textarea>
@@ -85,6 +119,8 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose }) => {
             <input 
               type="text" 
               id="tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
               placeholder="用逗号分隔，如：考研, 线上自习" 
               className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
@@ -118,7 +154,7 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose }) => {
         
         <footer className="p-4 border-t border-gray-200">
           <button
-            onClick={onClose}
+            onClick={handleSubmit}
             className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md transition-transform transform hover:scale-105"
           >
             发布
