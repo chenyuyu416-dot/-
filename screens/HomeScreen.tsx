@@ -12,6 +12,8 @@ interface HomeScreenProps {
   onCompetitionSelect: (competition: Competition) => void;
   selectedLocation: string;
   onLocationChange: (location: string) => void;
+  // FIX: Add onQuickPost prop to fix type error from App.tsx
+  onQuickPost: (categoryId: string, sceneId: string) => void;
 }
 
 const LocationSelectorModal: React.FC<{
@@ -130,7 +132,7 @@ const CategoryListItem: React.FC<{ category: Category, onClick: () => void }> = 
     );
 };
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ user, onCategorySelect, onAiButtonClick, onSearch, onCompetitionSelect, selectedLocation, onLocationChange }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ user, onCategorySelect, onAiButtonClick, onSearch, onCompetitionSelect, selectedLocation, onLocationChange, onQuickPost }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLocationModalOpen, setLocationModalOpen] = useState(false);
 

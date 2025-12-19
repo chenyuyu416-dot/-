@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User, TeamRequest } from '../types';
-import { X } from './Icons';
+import { X, ShieldCheck } from './Icons';
 
 interface ApplicantProfileModalProps {
     request: TeamRequest;
@@ -12,6 +12,8 @@ interface ApplicantProfileModalProps {
 
 const ApplicantProfileModal: React.FC<ApplicantProfileModalProps> = ({ request, onClose, onAccept, onReject }) => {
     const { user } = request;
+    const certifiedSkills = user.skills?.filter(s => s.status === 'certified') || [];
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col">
@@ -26,6 +28,20 @@ const ApplicantProfileModal: React.FC<ApplicantProfileModalProps> = ({ request, 
                         <p className="font-bold text-xl">{user.name}</p>
                         <p className="text-sm text-gray-500">{user.school} · {user.major}</p>
                     </div>
+
+                     {certifiedSkills.length > 0 && (
+                        <div>
+                            <h4 className="font-semibold text-sm mb-1 text-gray-600">已认证技能:</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {certifiedSkills.map(skill => (
+                                    <span key={skill.name} className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium flex items-center gap-1.5">
+                                        <ShieldCheck className="w-3.5 h-3.5" /> {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div>
                         <h4 className="font-semibold text-sm mb-1 text-gray-600">申请信息:</h4>
                         <p className="text-sm bg-gray-100 p-2 rounded-md">"{request.message}"</p>

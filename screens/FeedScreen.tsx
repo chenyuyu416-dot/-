@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Post as PostType, Comment } from '../types';
-import { Heart, MessageSquare, MoreVertical, Plus, User } from '../components/Icons';
+import { Post as PostType, Comment, User as UserType } from '../types';
+import { Heart, MessageSquare, Plus, User } from '../components/Icons';
 import { DUMMY_USERS } from '../constants';
 
 interface PostCardProps {
@@ -12,14 +12,15 @@ interface PostCardProps {
     commentCount: number;
     isFollowing: boolean;
     onFollowClick: () => void;
+    onAuthorClick: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ post, onClick, isLiked, onLike, commentCount, isFollowing, onFollowClick }) => {
+const PostCard: React.FC<PostCardProps> = ({ post, onClick, isLiked, onLike, commentCount, isFollowing, onFollowClick, onAuthorClick }) => {
     return (
         <div className="bg-white rounded-lg shadow-md mb-4 overflow-hidden">
             <div className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center cursor-pointer" onClick={onClick}>
+                    <div className="flex items-center cursor-pointer" onClick={onAuthorClick}>
                         <img src={post.author.avatar} alt={post.author.name} className="w-10 h-10 rounded-full mr-3" />
                         <div>
                             <p className="font-semibold text-gray-800">{post.author.name}</p>
@@ -73,9 +74,10 @@ interface FeedScreenProps {
     onOpenPersonalSpace: () => void;
     onPostSelect: (post: PostType) => void;
     unreadNotificationCount: number;
+    onAuthorClick: (user: UserType) => void;
 }
 
-const FeedScreen: React.FC<FeedScreenProps> = ({ posts, comments, onPostCreate, likedPostIds, onToggleLike, selectedLocation, followingIds, onToggleFollow, onAddComment, onOpenPersonalSpace, onPostSelect, unreadNotificationCount }) => {
+const FeedScreen: React.FC<FeedScreenProps> = ({ posts, comments, onPostCreate, likedPostIds, onToggleLike, selectedLocation, followingIds, onToggleFollow, onAddComment, onOpenPersonalSpace, onPostSelect, unreadNotificationCount, onAuthorClick }) => {
 
     const filteredPosts = posts.filter(post => post.author.location === selectedLocation);
 
@@ -107,6 +109,7 @@ const FeedScreen: React.FC<FeedScreenProps> = ({ posts, comments, onPostCreate, 
                                 commentCount={commentCount}
                                 isFollowing={followingIds.has(post.author.id)}
                                 onFollowClick={() => onToggleFollow(post.author.id)}
+                                onAuthorClick={() => onAuthorClick(post.author)}
                             />
                         );
                     })

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User } from '../types';
-import { X, MessageSquare } from './Icons';
+import { X, MessageSquare, ShieldCheck } from './Icons';
 
 interface PartnerProfileModalProps {
     user: User;
@@ -10,6 +10,8 @@ interface PartnerProfileModalProps {
 }
 
 const PartnerProfileModal: React.FC<PartnerProfileModalProps> = ({ user, onClose, onStartChat }) => {
+    const certifiedSkills = user.skills?.filter(s => s.status === 'certified') || [];
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col">
@@ -24,6 +26,19 @@ const PartnerProfileModal: React.FC<PartnerProfileModalProps> = ({ user, onClose
                         <p className="font-bold text-xl">{user.name}</p>
                         <p className="text-sm text-gray-500">{user.school} · {user.major}</p>
                     </div>
+
+                    {certifiedSkills.length > 0 && (
+                        <div>
+                            <h4 className="font-semibold text-sm mb-2 text-gray-600 text-center">已认证技能</h4>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {certifiedSkills.map(skill => (
+                                    <span key={skill.name} className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium flex items-center gap-1.5">
+                                        <ShieldCheck className="w-3.5 h-3.5" /> {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </main>
 
                 <footer className="p-4 border-t">

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User, Post } from '../types';
-import { ShieldCheck, Award, Settings, BookOpen, Trophy, File, HelpCircle, Star } from '../components/Icons';
+import { ShieldCheck, Award, Settings, BookOpen, Trophy, File, HelpCircle, Star, Clock } from '../components/Icons';
 
 interface ProfileScreenProps {
     user: User;
@@ -18,8 +18,22 @@ interface ProfileScreenProps {
     onPartnerPointsClick: () => void;
 }
 
+const CertificationStatus: React.FC<{label: string, status?: 'none' | 'pending' | 'certified'}> = ({label, status}) => {
+    if (status === 'certified') {
+        return <div className="flex items-center text-green-600"><ShieldCheck className="w-5 h-5 mr-2"/> <span className="text-sm font-medium">{label} (已认证)</span></div>;
+    }
+    if (status === 'pending') {
+        return <div className="flex items-center text-yellow-600"><Clock className="w-5 h-5 mr-2 animate-spin"/> <span className="text-sm">{label} (审核中)</span></div>;
+    }
+    return <div className="flex items-center text-gray-400"><Award className="w-5 h-5 mr-2"/> <span className="text-sm">{label} (未认证)</span></div>;
+};
+
+
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, posts, followingCount, onLogout, onSettingsClick, onMyStuffClick, onEditTagsClick, onBadgesClick, onCertificationClick, onUploadResumeClick, onFeedbackClick, onPartnerPointsClick }) => {
     const myPostsCount = posts.filter(p => p.author.id === user.id).length;
+    
+    // FIX: Derive certified skills from the user's skills array, as `user.certifiedSkills` does not exist.
+    const certifiedSkills = user.skills?.filter(s => s.status === 'certified').map(s => s.name) || [];
     
     const stats = [
         { label: '动态', value: myPostsCount, key: 'posts' },
@@ -96,6 +110,28 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, posts, followingCou
                          </div>
                     </button>
 
+                     <button onClick={onCertificationClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
+                        <h3 className="font-bold text-gray-800 mb-3">可信度认证</h3>
+                        <div className="space-y-3">
+                           <CertificationStatus label="学生认证" status={user.studentCertificationStatus} />
+                           <CertificationStatus label="技能认证" status={user.skillCertificationStatus} />
+                        </div>
+                    </button>
+
+                    {/* FIX: Check for certified skills using the derived `certifiedSkills` array. */}
+                    {certifiedSkills.length > 0 && (
+                        <div className="w-full text-left p-4 bg-white rounded-xl shadow-lg">
+                            <h3 className="font-bold text-gray-800 mb-3">我的技能</h3>
+                            <div className="flex flex-wrap gap-2">
+                                {certifiedSkills.map(skill => (
+                                    <span key={skill} className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full font-medium flex items-center gap-1.5">
+                                        <ShieldCheck className="w-4 h-4" /> {skill}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <button onClick={onUploadResumeClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
                         <h3 className="font-bold text-gray-800 mb-3">我的简历</h3>
                          <div className="flex items-center text-gray-600">
@@ -104,19 +140,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, posts, followingCou
                          </div>
                     </button>
 
-                     <button onClick={onCertificationClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
-                        <h3 className="font-bold text-gray-800 mb-3">可信度认证</h3>
-                        <div className="space-y-2">
-                           <div className="flex items-center text-green-600">
-                             <ShieldCheck className="w-5 h-5 mr-2"/>
-                             <span className="text-sm font-medium">学生认证 (已认证)</span>
-                           </div>
-                           <div className="flex items-center text-gray-400">
-                             <Award className="w-5 h-5 mr-2"/>
-                             <span className="text-sm">技能认证 (未认证)</span>
-                           </div>
-                        </div>
-                    </button>
                      <button onClick={onFeedbackClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
                         <h3 className="font-bold text-gray-800 mb-3">问题反馈</h3>
                          <div className="flex items-center text-gray-600">

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User } from '../types';
-import { X, Search, Trash2, FileText, Heart, UserPlus, Users } from './Icons';
+import { X, Search, Trash2, FileText, Heart, UserPlus, Users, ShieldCheck } from './Icons';
 
 interface ChatPartnerProfileModalProps {
     user: User;
@@ -21,6 +21,7 @@ const StatItem: React.FC<{ Icon: React.FC<{className?: string}>, value: number, 
 );
 
 const ChatPartnerProfileModal: React.FC<ChatPartnerProfileModalProps> = ({ user, onClose, onSearchHistory, onClearHistory, onDeleteChat, onViewPosts }) => {
+    const certifiedSkills = user.skills?.filter(s => s.status === 'certified') || [];
     
     const handleAction = (action: () => void) => {
         onClose();
@@ -46,6 +47,20 @@ const ChatPartnerProfileModal: React.FC<ChatPartnerProfileModalProps> = ({ user,
                         <p className="font-bold text-xl">{user.name}</p>
                         <p className="text-sm text-gray-500">{user.school}</p>
                     </div>
+
+                    {certifiedSkills.length > 0 && (
+                        <div className="my-4">
+                            <h4 className="font-semibold text-sm mb-2 text-gray-600 text-center">已认证技能</h4>
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {certifiedSkills.map(skill => (
+                                    <span key={skill.name} className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium flex items-center gap-1.5">
+                                        <ShieldCheck className="w-3.5 h-3.5" /> {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    
                     <div className="grid grid-cols-4 gap-2 py-4 border-y my-4">
                         <button onClick={() => { onClose(); onViewPosts(user); }} className="text-center p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-300">
                             <StatItem Icon={FileText} value={5} label="动态"/>

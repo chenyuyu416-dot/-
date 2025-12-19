@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, MessageSquare, Heart } from '../components/Icons';
+import { ChevronLeft, Heart } from '../components/Icons';
 import { DUMMY_USERS } from '../constants';
 import { Post as PostType, User, Comment, LikeNotification } from '../types';
 
@@ -15,7 +15,7 @@ interface PersonalSpaceScreenProps {
   initialTab: 'posts' | 'partners' | 'following' | 'followers' | 'notifications';
   onBack: () => void;
   onPostSelect: (post: PostType) => void;
-  onPartnerClick: (user: User) => void;
+  onUserClick: (user: User) => void;
   likedPostIds: Set<string>;
   onToggleLike: (postId: string) => void;
   onToggleFollow: (userId: string) => void;
@@ -45,7 +45,7 @@ const UserItem: React.FC<{user: User, isFollowing?: boolean, onToggleFollow: () 
                 <p className="text-sm text-gray-500">{user.school}</p>
             </div>
         </div>
-        {isFollowing !== undefined &&
+        {isFollowing !== undefined && user.id !== DUMMY_USERS.currentUser.id &&
             <button onClick={(e) => { e.stopPropagation(); onToggleFollow(); }} className={`px-3 py-1 text-xs rounded-full font-semibold ${isFollowing ? 'bg-gray-200 text-gray-700' : 'bg-indigo-100 text-indigo-600'}`}>
                 {isFollowing ? '已关注' : '回关'}
             </button>
@@ -87,7 +87,7 @@ const LikeNotificationItem: React.FC<{ notification: LikeNotification, onClick: 
 );
 
 
-const PersonalSpaceScreen: React.FC<PersonalSpaceScreenProps> = ({ user, posts, comments, likeNotifications, readCommentIds, readLikeIds, followingIds, initialTab, onBack, onPostSelect, onPartnerClick, onToggleFollow, onMarkNotificationsRead }) => {
+const PersonalSpaceScreen: React.FC<PersonalSpaceScreenProps> = ({ user, posts, comments, likeNotifications, readCommentIds, readLikeIds, followingIds, initialTab, onBack, onPostSelect, onUserClick, onToggleFollow, onMarkNotificationsRead }) => {
     const [activeTab, setActiveTab] = useState<Tab>(initialTab);
     const [activeNotificationTab, setActiveNotificationTab] = useState<NotificationTab>('comments');
 
@@ -118,11 +118,11 @@ const PersonalSpaceScreen: React.FC<PersonalSpaceScreenProps> = ({ user, posts, 
                     return <PostItem key={post.id} post={post} onClick={() => onPostSelect(post)} commentCount={commentCount} />
                 });
             case 'partners':
-                return myPartners.map(partner => <UserItem key={partner.id} user={partner} isFollowing={followingIds.has(partner.id)} onToggleFollow={() => onToggleFollow(partner.id)} onClick={() => onPartnerClick(partner)} />);
+                return myPartners.map(partner => <UserItem key={partner.id} user={partner} isFollowing={followingIds.has(partner.id)} onToggleFollow={() => onToggleFollow(partner.id)} onClick={() => onUserClick(partner)} />);
             case 'following':
-                return followingUsers.map(followedUser => <UserItem key={followedUser.id} user={followedUser} isFollowing={true} onToggleFollow={() => onToggleFollow(followedUser.id)} onClick={() => onPartnerClick(followedUser)} />);
+                return followingUsers.map(followedUser => <UserItem key={followedUser.id} user={followedUser} isFollowing={true} onToggleFollow={() => onToggleFollow(followedUser.id)} onClick={() => onUserClick(followedUser)} />);
             case 'followers':
-                 return followerUsers.map(follower => <UserItem key={follower.id} user={follower} isFollowing={followingIds.has(follower.id)} onToggleFollow={() => onToggleFollow(follower.id)} onClick={() => onPartnerClick(follower)} />);
+                 return followerUsers.map(follower => <UserItem key={follower.id} user={follower} isFollowing={followingIds.has(follower.id)} onToggleFollow={() => onToggleFollow(follower.id)} onClick={() => onUserClick(follower)} />);
             case 'notifications':
                  return (
                     <div>

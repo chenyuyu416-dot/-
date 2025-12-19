@@ -76,6 +76,7 @@ const App: React.FC = () => {
     const [isPartnerPointsScreenOpen, setIsPartnerPointsScreenOpen] = useState(false);
     const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
     const [resumeFile, setResumeFile] = useState<File | null>(null);
+    const [initialPostData, setInitialPostData] = useState<{ categoryId?: string, sceneId?: string }>({});
 
     const myPostIds = useMemo(() => new Set(posts.filter(p => p.author.id === currentUser.id).map(p => p.id)), [posts, currentUser]);
 
@@ -147,7 +148,6 @@ const App: React.FC = () => {
         if (updatedInfo.location) {
             setSelectedLocation(updatedInfo.location);
         }
-        alert("信息已保存！");
     };
 
     const handleSaveTags = (newTags: string[]) => {
@@ -363,6 +363,11 @@ const App: React.FC = () => {
         setViewingPartnerPosts(user);
     }, []);
 
+    const handleQuickPost = useCallback((categoryId: string, sceneId: string) => {
+        setInitialPostData({ categoryId, sceneId });
+        setIsPosting(true);
+    }, []);
+
     const handleClaimBadge = (badgeId: string) => {
         const badgeToClaim = badges.find(b => b.id === badgeId);
         if (!badgeToClaim || !badgeToClaim.isClaimable) return;
@@ -381,16 +386,45 @@ const App: React.FC = () => {
         setSelectedBadge(null);
     };
 
+    const handleCertificationUpload = useCallback((studentIdFile: File | null, skillFile: File | null) => {
+        const updates: Partial<User> = {};
+        if (studentIdFile) {
+            updates.studentCertificationStatus = 'pending';
+        }
+        if (skillFile) {
+            updates.skillCertificationStatus = 'pending';
+        }
+        if (Object.keys(updates).length > 0) {
+            setCurrentUser(prev => ({...prev, ...updates}));
+            alert('认证材料已提交，请等待审核。');
+        }
+        setCertificationModalOpen(false);
+    }, []);
+
+    const handleSchoolChangeRequest = useCallback((newSchool: string, studentIdFile: File) => {
+        alert(`学校变更为 "${newSchool}" 的申请已提交审核。`);
+    }, []);
+
+    const handleViewPartnerProfile = (user: User) => {
+        setPartnerProfile(user);
+    };
 
     const renderModals = () => (
         <>
             {isEditTagsModalOpen && <EditTagsModal tags={currentUser.tags || []} onSave={handleSaveTags} onClose={() => setEditTagsModalOpen(false)} />}
             {isBadgesModalOpen && <BadgesModal badges={badges} onClose={() => setBadgesModalOpen(false)} onSelectBadge={setSelectedBadge} />}
             {selectedBadge && <BadgeDetailModal badge={selectedBadge} onClose={() => setSelectedBadge(null)} onClaim={handleClaimBadge} />}
-            {isCertificationModalOpen && <CertificationModal onClose={() => setCertificationModalOpen(false)} />}
-            {partnerProfile && <PartnerProfileModal user={partnerProfile} onClose={() => setPartnerProfile(null)} onStartChat={() => {
-                const chat = chats.find(c => c.user.id === partnerProfile.id);
-                if (chat) handleOpenChat(chat.id, partnerProfile);
+            {isCertificationModalOpen && <CertificationModal user={currentUser} onClose={() => setCertificationModalOpen(false)} onUpload={handleCertificationUpload} />}
+            {partnerProfile && <PartnerProfileModal user={partnerProfile} onClose={() => setPartnerProfile(null)} onStartChat={(user) => {
+                const chat = chats.find(c => c.user.id === user.id);
+                if (chat) handleOpenChat(chat.id, user);
+                else {
+                    // Create new chat if not exists
+                    const newChatId = `chat_${user.id}`;
+                    const newChat = { id: newChatId, user: user, lastMessage: '开始聊天吧！', timestamp: '刚刚', unreadCount: 0 };
+                    setChats(prev => [newChat, ...prev]);
+                    handleOpenChat(newChatId, user);
+                }
             }} />}
             {isUploadResumeModalOpen && <UploadResumeModal onClose={() => setUploadResumeModalOpen(false)} resumeFile={resumeFile} onFileChange={setResumeFile} />}
             {activeCompetition && <CompetitionDetailModal competition={activeCompetition} onClose={() => setActiveCompetition(null)} appliedTeamIds={appliedTeamIds} onApplyToTeam={handleApplyToTeam} />}
@@ -439,7 +473,7 @@ const App: React.FC = () => {
             return <AIScreen onBack={() => setIsAiScreenOpen(false)} data={progressData} onUpdateProgress={handleUpdateProgress}/>;
         }
         if (isSettingsOpen) {
-            return <SettingsScreen user={currentUser} onBack={() => setIsSettingsOpen(false)} onSave={handleUpdateUser} />;
+            return <SettingsScreen user={currentUser} onBack={() => setIsSettingsOpen(false)} onSave={handleUpdateUser} onSchoolChangeRequest={handleSchoolChangeRequest} />;
         }
         if (isPartnerPointsScreenOpen) {
             return <PartnerPointsScreen user={currentUser} onBack={() => setIsPartnerPointsScreenOpen(false)} />;
@@ -457,10 +491,7 @@ const App: React.FC = () => {
                         onBack={() => setActivePersonalSpaceTab(null)} 
                         onPostSelect={setActivePost}
                         onMarkNotificationsRead={handleMarkNotificationsRead}
-                        onPartnerClick={(user) => {
-                             const chat = chats.find(c => c.user.id === user.id);
-                             if (chat) handleOpenChat(chat.id, user);
-                        }}
+                        onUserClick={handleViewPartnerProfile}
                         likedPostIds={likedPostIds}
                         onToggleLike={handleToggleLike}
                         onToggleFollow={handleToggleFollow}
@@ -493,6 +524,7 @@ const App: React.FC = () => {
                             onCompetitionSelect={setActiveCompetition}
                             selectedLocation={selectedLocation}
                             onLocationChange={handleLocationChange}
+                            onQuickPost={handleQuickPost}
                         />;
             case 'feed':
                 return <FeedScreen 
@@ -508,6 +540,7 @@ const App: React.FC = () => {
                             onOpenPersonalSpace={() => setActivePersonalSpaceTab('posts')}
                             onPostSelect={setActivePost}
                             unreadNotificationCount={totalUnreadNotifications}
+                            onAuthorClick={handleViewPartnerProfile}
                         />;
             case 'messages':
                 return <MessagesScreen 
@@ -541,6 +574,7 @@ const App: React.FC = () => {
                             onCompetitionSelect={setActiveCompetition}
                             selectedLocation={selectedLocation}
                             onLocationChange={handleLocationChange}
+                            onQuickPost={handleQuickPost}
                         />;
         }
     };
@@ -566,6 +600,10 @@ const App: React.FC = () => {
                     onClose={() => setActivePost(null)} 
                     isLiked={likedPostIds.has(activePost.id)}
                     onToggleLike={() => handleToggleLike(activePost.id)}
+                    onAuthorClick={(user) => {
+                        setActivePost(null);
+                        handleViewPartnerProfile(user);
+                    }}
                 />
             )}
             {viewingPartnerPosts && (
@@ -581,7 +619,16 @@ const App: React.FC = () => {
                 />
             )}
             {renderModals()}
-            <PostScreen isOpen={isPosting} onClose={() => setIsPosting(false)} onAddPost={handleAddPost} />
+            <PostScreen 
+                isOpen={isPosting} 
+                onClose={() => {
+                    setIsPosting(false);
+                    setInitialPostData({});
+                }} 
+                onAddPost={handleAddPost}
+                initialCategoryId={initialPostData.categoryId}
+                initialSceneId={initialPostData.sceneId}
+            />
             <BottomNav 
                 currentPage={currentPage} 
                 onNavigate={handleNavigate} 

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Image, File, Video } from '../components/Icons';
 import { DUMMY_CATEGORIES, DUMMY_USERS } from '../constants';
 import { Post } from '../types';
@@ -8,9 +8,12 @@ interface PostScreenProps {
   isOpen: boolean;
   onClose: () => void;
   onAddPost: (post: Post) => void;
+  // FIX: Add initial props to fix type error from App.tsx
+  initialCategoryId?: string;
+  initialSceneId?: string;
 }
 
-const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost }) => {
+const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost, initialCategoryId, initialSceneId }) => {
   const [selectedCategory, setSelectedCategory] = useState(DUMMY_CATEGORIES[0].id);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -18,6 +21,13 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost }) =
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [videoName, setVideoName] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
+
+  // FIX: Use useEffect to set the initial category when the modal is opened via quick post.
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedCategory(initialCategoryId || DUMMY_CATEGORIES[0].id);
+    }
+  }, [isOpen, initialCategoryId]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'file') => {
     const file = e.target.files?.[0];
@@ -47,6 +57,8 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost }) =
       id: `p${Date.now()}`,
       author: DUMMY_USERS.currentUser,
       category: selectedCategory,
+      // FIX: Add sceneId to the created post object.
+      sceneId: initialSceneId,
       title,
       content,
       tags: tags.split(/[,，\s]+/).filter(Boolean),

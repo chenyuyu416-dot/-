@@ -5,7 +5,18 @@ import { BookOpen, Users, Briefcase, Heart, Gamepad2, GraduationCap, Trophy, Mic
 export const DUMMY_USERS: { [key: string]: User } = {
   'user1': { id: 'user1', name: '林同学', avatar: 'https://picsum.photos/seed/user1/100/100', school: '清华大学', major: '电子工程', location: '北京' },
   'user2': { id: 'user2', name: '王同学', avatar: 'https://picsum.photos/seed/user2/100/100', school: '复旦大学', major: '新闻学', location: '上海' },
-  'user3': { id: 'user3', name: '张伟', avatar: 'https://picsum.photos/seed/user3/100/100', school: '上海交通大学', major: '机械工程', location: '上海' },
+  'user3': { 
+    id: 'user3', 
+    name: '张伟', 
+    avatar: 'https://picsum.photos/seed/user3/100/100', 
+    school: '上海交通大学', 
+    major: '机械工程', 
+    location: '上海',
+    skills: [
+        { name: '英语六级', status: 'certified' },
+        { name: 'SolidWorks', status: 'certified' },
+    ]
+   },
   'user4': { id: 'user4', name: 'AI小助手', avatar: 'https://i.pravatar.cc/150?u=ai_assistant', school: '云端', location: '通用' },
   'user5': { id: 'user5', name: '陈敏', avatar: 'https://picsum.photos/seed/user5/100/100', school: '浙江大学', major: '法学', location: '杭州' },
   'dada_assistant': { id: 'dada_assistant', name: '搭搭小助手', avatar: 'https://i.pravatar.cc/150?u=dada_assistant', school: '官方', location: '通用' },
@@ -20,6 +31,13 @@ export const DUMMY_USERS: { [key: string]: User } = {
     tags: ['25考研', '互联网+', 'Python', 'React'],
     preferences: ['喜欢早起学习', '不接受临时放鸽子'],
     partnerPoints: 125,
+    studentCertificationStatus: 'certified',
+    skillCertificationStatus: 'none',
+    skills: [
+        { name: '英语六级', status: 'none' },
+        { name: '计算机二级', status: 'certified' },
+        { name: '教师资格证', status: 'pending' },
+    ],
   },
 };
 
@@ -146,15 +164,88 @@ export const DUMMY_TEAMS: Team[] = [
 ];
 
 export const DUMMY_JOBS: Job[] = [
-    {id: 'j1', sceneId: 'ca1', title: '前端开发实习生', company: '字节跳动', location: '北京', type: '线下', salary: '400/天', deadline: '2024-09-30'},
-    {id: 'j2', sceneId: 'ca1', title: '产品运营实习生', company: '腾讯', location: '深圳', type: '线下', salary: '300/天', deadline: '2024-08-31'},
-    {id: 'j3', sceneId: 'ca3', title: '新媒体内容编辑', company: '小红书', location: '上海', type: '远程', salary: '200/天', deadline: '2024-10-15'},
+    {
+        id: 'j1', sceneId: 'ca1', title: '前端开发实习生', company: '字节跳动', location: '北京', type: '线下', salary: '400/天', deadline: '2024-09-30',
+        description: '我们正在寻找一位充满激情的前端开发实习生，加入我们的核心业务团队，参与抖音、今日头条等亿级用户产品的研发与维护。你将有机会接触业界前沿技术，与顶尖工程师共同成长。',
+        responsibilities: [
+            '参与产品需求讨论和评审，理解业务逻辑。',
+            '负责前端页面的开发、调试和优化，确保多端兼容性。',
+            '与后端工程师协作，完成数据交互和接口调试。',
+            '维护和优化前端基础架构，提升开发效率和页面性能。'
+        ],
+        requirements: [
+            '熟悉 HTML5, CSS3, JavaScript (ES6+)，基础扎实。',
+            '至少熟悉一种主流前端框架（React, Vue, Angular）。',
+            '了解 Webpack, Vite 等构建工具。',
+            '有良好的编码习惯和团队协作精神。',
+            '每周至少实习3天，持续3个月以上。'
+        ]
+    },
+    {
+        id: 'j2', sceneId: 'ca1', title: '产品运营实习生', company: '腾讯', location: '深圳', type: '线下', salary: '300/天', deadline: '2024-08-31',
+        description: '加入腾讯社交产品部，负责QQ、微信等国民级产品的运营工作。你将深入了解用户需求，策划并执行线上活动，通过数据驱动产品迭代，见证产品的成长。',
+        responsibilities: [
+            '协助进行用户调研，收集和分析用户反馈。',
+            '策划线上活动，撰写活动方案并跟进执行。',
+            '监控产品数据，撰写数据分析报告，为产品决策提供支持。',
+            '负责部分社区内容的运营和维护。'
+        ],
+        requirements: [
+            '对互联网产品有浓厚兴趣和深刻理解。',
+            '具备优秀的数据分析能力和逻辑思维能力。',
+            '良好的沟通能力和团队协作精神。',
+            '熟练使用Office、Axure等办公软件。'
+        ]
+    },
+    {
+        id: 'j3', sceneId: 'ca3', title: '新媒体内容编辑', company: '小红书', location: '上海', type: '远程', salary: '200/天', deadline: '2024-10-15',
+        description: '你将成为小红书社区内容生态的建设者，负责时尚、美妆、生活等领域的内容创作与编辑。如果你是网感达人、热点捕捉器，并拥有出色的文笔，快来加入我们！',
+        responsibilities: [
+            '负责小红书官方账号的内容策划、撰写和发布。',
+            '追踪热点事件，结合社区调性进行内容创作。',
+            '与KOL、品牌方合作，执行内容合作项目。',
+            '分析内容数据，优化内容策略，提升用户互动。'
+        ],
+        requirements: [
+            '小红书深度用户，熟悉社区文化和内容风格。',
+            '具备优秀的文案撰写和内容策划能力。',
+            '网感好，对社交媒体热点有敏锐的洞察力。',
+            '具备基础的图片处理和视频剪辑能力者优先。'
+        ]
+    },
 ];
 
 export const DUMMY_VOLUNTEER_ACTIVITIES: VolunteerActivity[] = [
-    {id: 'v1', sceneId: 'v1', title: '“爱心书屋”图书整理', organization: '北京大学青年志愿者协会', location: '北京', time: '每周六下午', required: 10, certification: true},
-    {id: 'v2', sceneId: 'v2', title: '马拉松赛事服务志愿者', organization: '北京市体育局', location: '北京', time: '2024-10-20 全天', required: 50, certification: true},
-    {id: 'v3', sceneId: 'v3', title: '“阳光助学”线上支教', organization: '西部阳光基金会', location: '线上', time: '每周2小时', required: 20, certification: false},
+    {
+        id: 'v1', sceneId: 'v1', title: '“爱心书屋”图书整理', organization: '北京大学青年志愿者协会', location: '北京', time: '每周六下午', required: 10, certification: true,
+        description: '“爱心书屋”是一个面向社区儿童的公益图书角，旨在为孩子们提供一个温馨的阅读环境，激发他们的阅读兴趣。我们每周都需要志愿者来维护书屋的日常运营。',
+        duties: [
+            '整理和归档捐赠的书籍，进行分类上架。',
+            '维持书屋内的清洁卫生，确保环境整洁。',
+            '引导孩子们阅读，回答他们的问题。',
+            '协助组织小型的读书分享会或故事会活动。'
+        ]
+    },
+    {
+        id: 'v2', sceneId: 'v2', title: '马拉松赛事服务志愿者', organization: '北京市体育局', location: '北京', time: '2024-10-20 全天', required: 50, certification: true,
+        description: '北京国际马拉松即将开跑，现招募赛事服务志愿者，共同保障赛事的顺利进行。你将成为城市的名片，为来自世界各地的跑者提供热情服务。',
+        duties: [
+            '在赛道沿途的补给站分发水和食物。',
+            '为选手提供指引，维持赛道秩序。',
+            '协助处理紧急情况，联系医疗人员。',
+            '在终点为完赛选手发放奖牌和物资。'
+        ]
+    },
+    {
+        id: 'v3', sceneId: 'v3', title: '“阳光助学”线上支教', organization: '西部阳光基金会', location: '线上', time: '每周2小时', required: 20, certification: false,
+        description: '通过线上视频的方式，为西部偏远地区的孩子们带去知识和陪伴。你不需要走很远的路，只需一台电脑和一颗爱心，就能点亮一个孩子的梦想。',
+        duties: [
+            '根据教学大纲，准备语文、数学或英语科目的课程。',
+            '每周固定时间为学生进行线上授课。',
+            '设计有趣的课堂互动，激发学生的学习兴趣。',
+            '定期与项目组沟通，反馈教学情况。'
+        ]
+    },
 ];
 
 export const DUMMY_TEAM_REQUESTS: TeamRequest[] = [

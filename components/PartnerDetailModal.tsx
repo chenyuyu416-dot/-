@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { User } from '../types';
-import { X } from './Icons';
+import { X, ShieldCheck } from './Icons';
 
 interface PartnerDetailModalProps {
     user: User;
@@ -10,6 +10,8 @@ interface PartnerDetailModalProps {
 }
 
 const PartnerDetailModal: React.FC<PartnerDetailModalProps> = ({ user, onClose, onApply }) => {
+    const certifiedSkills = user.skills?.filter(s => s.status === 'certified') || [];
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col">
@@ -32,6 +34,18 @@ const PartnerDetailModal: React.FC<PartnerDetailModalProps> = ({ user, onClose, 
                             )) || <span className="text-sm text-gray-400">暂无标签</span>}
                         </div>
                     </div>
+                     {certifiedSkills.length > 0 && (
+                        <div>
+                            <h4 className="font-semibold text-sm mb-1 text-gray-600">已认证技能:</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {certifiedSkills.map(skill => (
+                                    <span key={skill.name} className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium flex items-center gap-1.5">
+                                        <ShieldCheck className="w-3.5 h-3.5" /> {skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <div>
                         <h4 className="font-semibold text-sm mb-1 text-gray-600">偏好:</h4>
                         <div className="space-y-1">

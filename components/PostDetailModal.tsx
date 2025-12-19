@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
-import { Post, Comment } from '../types';
-import { DUMMY_USERS } from '../constants';
+import { Post, Comment, User } from '../types';
 import { X, Heart, MessageSquare, Send } from './Icons';
 
 interface PostDetailModalProps {
@@ -11,9 +10,10 @@ interface PostDetailModalProps {
   isLiked: boolean;
   onToggleLike: () => void;
   onAddComment: (postId: string, text: string) => void;
+  onAuthorClick: (user: User) => void;
 }
 
-const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, comments, onClose, isLiked, onToggleLike, onAddComment }) => {
+const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, comments, onClose, isLiked, onToggleLike, onAddComment, onAuthorClick }) => {
     const [newComment, setNewComment] = useState('');
 
     const handleAddComment = () => {
@@ -33,7 +33,7 @@ const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, comments, onClo
                 <main className="flex-1 overflow-y-auto p-4">
                     {/* Post Content */}
                     <div className="border-b pb-4">
-                         <div className="flex items-center">
+                         <div className="flex items-center cursor-pointer" onClick={() => onAuthorClick(post.author)}>
                             <img src={post.author.avatar} alt={post.author.name} className="w-10 h-10 rounded-full mr-3" />
                             <div>
                                 <p className="font-semibold">{post.author.name}</p>

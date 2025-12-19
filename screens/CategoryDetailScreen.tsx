@@ -7,6 +7,8 @@ import InterviewPrepModal from '../components/InterviewPrepModal';
 import PartnerDetailModal from '../components/PartnerDetailModal';
 import SelectResumeModal from '../components/SelectResumeModal';
 import VolunteerSignUpModal from '../components/VolunteerSignUpModal';
+import JobDetailModal from '../components/JobDetailModal';
+import VolunteerDetailModal from '../components/VolunteerDetailModal';
 
 interface CategoryDetailScreenProps {
   category: Category;
@@ -61,8 +63,8 @@ const CompetitionCard: React.FC<{ comp: Competition, onClick: () => void }> = ({
     </div>
 );
 
-const JobCard: React.FC<{ job: Job, onApply: () => void, isApplied: boolean }> = ({ job, onApply, isApplied }) => (
-    <div className="bg-white rounded-lg shadow p-4 mb-4">
+const JobCard: React.FC<{ job: Job, onClick: () => void }> = ({ job, onClick }) => (
+    <div onClick={onClick} className="bg-white rounded-lg shadow p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow">
         <div className="flex justify-between items-start">
             <div>
                 <h4 className="font-bold text-gray-800">{job.title}</h4>
@@ -74,39 +76,17 @@ const JobCard: React.FC<{ job: Job, onApply: () => void, isApplied: boolean }> =
             <span className="bg-gray-100 px-2 py-0.5 rounded">{job.location}</span>
             <span className="bg-gray-100 px-2 py-0.5 rounded">{job.type}</span>
         </div>
-        <div className="flex justify-end space-x-2 mt-3">
-            <button onClick={() => alert('已收藏!')} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300">收藏</button>
-            <button 
-                onClick={onApply} 
-                disabled={isApplied}
-                className="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
-            >
-                {isApplied && <Check className="w-3 h-3" />}
-                {isApplied ? '已投递' : '一键投递'}
-            </button>
-        </div>
     </div>
 );
 
-const VolunteerCard: React.FC<{ activity: VolunteerActivity, onSignUp: (activity: VolunteerActivity) => void, isApplied: boolean }> = ({ activity, onSignUp, isApplied }) => (
-    <div className="bg-white rounded-lg shadow p-4 mb-4">
+const VolunteerCard: React.FC<{ activity: VolunteerActivity, onClick: () => void }> = ({ activity, onClick }) => (
+    <div onClick={onClick} className="bg-white rounded-lg shadow p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow">
         <h4 className="font-bold text-gray-800">{activity.title}</h4>
         <p className="text-sm text-gray-600 mt-1">{activity.organization}</p>
         <div className="flex items-center text-xs text-gray-500 mt-2 space-x-2">
             <span className="bg-gray-100 px-2 py-0.5 rounded">{activity.location}</span>
             <span className="bg-gray-100 px-2 py-0.5 rounded">{activity.time}</span>
             {activity.certification && <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded">可认证时长</span>}
-        </div>
-        <div className="flex justify-end space-x-2 mt-3">
-            <button onClick={() => alert('组队功能开发中!')} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300">组队</button>
-            <button 
-                onClick={() => onSignUp(activity)} 
-                disabled={isApplied}
-                className="text-xs bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
-            >
-                 {isApplied && <Check className="w-3 h-3" />}
-                {isApplied ? '已报名' : '一键报名'}
-            </button>
         </div>
     </div>
 );
@@ -118,11 +98,14 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
     const [applyingToPost, setApplyingToPost] = useState<Post | null>(null);
     const [isSelectResumeModalOpen, setSelectResumeModalOpen] = useState(false);
     const [applyingToJob, setApplyingToJob] = useState<Job | null>(null);
-    const [activeVolunteerActivity, setActiveVolunteerActivity] = useState<VolunteerActivity | null>(null);
+    const [signingUpForActivity, setSigningUpForActivity] = useState<VolunteerActivity | null>(null);
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+    const [selectedVolunteerActivity, setSelectedVolunteerActivity] = useState<VolunteerActivity | null>(null);
     
     const handleJobApply = (job: Job) => {
         setApplyingToJob(job);
         setSelectResumeModalOpen(true);
+        setSelectedJob(null);
     };
 
     const handleConfirmJobApply = () => {
@@ -134,10 +117,15 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
         }
     };
     
+    const handleVolunteerSignUp = (activity: VolunteerActivity) => {
+        setSigningUpForActivity(activity);
+        setSelectedVolunteerActivity(null);
+    };
+    
     const handleConfirmVolunteerSignUp = () => {
-        if (activeVolunteerActivity) {
-            onApply(activeVolunteerActivity.id);
-            setActiveVolunteerActivity(null);
+        if (signingUpForActivity) {
+            onApply(signingUpForActivity.id);
+            setSigningUpForActivity(null);
             alert("报名成功！通知已发送至您的消息中心。");
         }
     };
@@ -164,11 +152,11 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
                         <Briefcase className="w-5 h-5"/>
                         <span>面试模拟</span>
                     </button>
-                    {relevantJobs.map(job => <JobCard key={job.id} job={job} onApply={() => handleJobApply(job)} isApplied={appliedIds.has(job.id)} />)}
+                    {relevantJobs.map(job => <JobCard key={job.id} job={job} onClick={() => setSelectedJob(job)} />)}
                 </>;
                 break;
             case 'volunteer':
-                content = relevantActivities.map(act => <VolunteerCard key={act.id} activity={act} onSignUp={setActiveVolunteerActivity} isApplied={appliedIds.has(act.id)} />);
+                content = relevantActivities.map(act => <VolunteerCard key={act.id} activity={act} onClick={() => setSelectedVolunteerActivity(act)} />);
                 break;
             default:
                 content = <p className="text-center text-gray-500 mt-8">暂无内容</p>;
@@ -228,7 +216,9 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
             {isInterviewPrepOpen && <InterviewPrepModal onClose={() => setInterviewPrepOpen(false)} onStartAIInterview={onStartAIInterview} />}
             {applyingToPost && <PartnerDetailModal user={applyingToPost.author} onClose={() => setApplyingToPost(null)} onApply={handleSendPostApplication} />}
             {isSelectResumeModalOpen && <SelectResumeModal onClose={() => setSelectResumeModalOpen(false)} onConfirm={handleConfirmJobApply} />}
-            {activeVolunteerActivity && <VolunteerSignUpModal activity={activeVolunteerActivity} onClose={() => setActiveVolunteerActivity(null)} onConfirm={handleConfirmVolunteerSignUp} />}
+            {signingUpForActivity && <VolunteerSignUpModal activity={signingUpForActivity} onClose={() => setSigningUpForActivity(null)} onConfirm={handleConfirmVolunteerSignUp} />}
+            {selectedJob && <JobDetailModal job={selectedJob} onClose={() => setSelectedJob(null)} onApply={() => handleJobApply(selectedJob)} isApplied={appliedIds.has(selectedJob.id)} />}
+            {selectedVolunteerActivity && <VolunteerDetailModal activity={selectedVolunteerActivity} onClose={() => setSelectedVolunteerActivity(null)} onSignUp={() => handleVolunteerSignUp(selectedVolunteerActivity)} isApplied={appliedIds.has(selectedVolunteerActivity.id)} />}
         </div>
     );
 };

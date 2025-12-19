@@ -3,6 +3,11 @@ import type { ComponentType } from 'react';
 
 export type Page = 'home' | 'feed' | 'messages' | 'profile';
 
+export interface Skill {
+  name: string;
+  status: 'none' | 'pending' | 'certified';
+}
+
 export interface User {
   id: string;
   name: string;
@@ -14,6 +19,9 @@ export interface User {
   tags?: string[];
   preferences?: string[];
   partnerPoints?: number;
+  studentCertificationStatus?: 'none' | 'pending' | 'certified';
+  skillCertificationStatus?: 'none' | 'pending' | 'certified';
+  skills?: Skill[];
 }
 
 export interface Message {
@@ -85,6 +93,9 @@ export interface Job {
     type: '远程' | '线下';
     salary: string;
     deadline: string;
+    description: string;
+    responsibilities: string[];
+    requirements: string[];
 }
 
 export interface VolunteerActivity {
@@ -96,6 +107,8 @@ export interface VolunteerActivity {
     time: string;
     required: number;
     certification: boolean;
+    description: string;
+    duties: string[];
 }
 
 export interface Comment {
