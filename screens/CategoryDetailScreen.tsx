@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { Category, Post, Competition, Job, VolunteerActivity } from '../types';
 import { ChevronLeft, Users, Trophy, Briefcase, Check } from '../components/Icons';
-import { DUMMY_POSTS, DUMMY_COMPETITIONS, DUMMY_JOBS, DUMMY_VOLUNTEER_ACTIVITIES } from '../constants';
+import { DUMMY_COMPETITIONS, DUMMY_JOBS, DUMMY_VOLUNTEER_ACTIVITIES } from '../constants';
 import InterviewPrepModal from '../components/InterviewPrepModal';
 import PartnerDetailModal from '../components/PartnerDetailModal';
 import SelectResumeModal from '../components/SelectResumeModal';
@@ -12,6 +12,7 @@ import VolunteerDetailModal from '../components/VolunteerDetailModal';
 
 interface CategoryDetailScreenProps {
   category: Category;
+  posts: Post[];
   onBack: () => void;
   onSendApplication: (post: Post) => void;
   appliedIds: Set<string>;
@@ -92,7 +93,7 @@ const VolunteerCard: React.FC<{ activity: VolunteerActivity, onClick: () => void
 );
 
 
-const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, onBack, onSendApplication, appliedIds, onApply, onStartAIInterview, onCompetitionSelect, selectedLocation }) => {
+const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, posts, onBack, onSendApplication, appliedIds, onApply, onStartAIInterview, onCompetitionSelect, selectedLocation }) => {
     const [activeScene, setActiveScene] = useState(category.scenes[0].id);
     const [isInterviewPrepOpen, setInterviewPrepOpen] = useState(false);
     const [applyingToPost, setApplyingToPost] = useState<Post | null>(null);
@@ -131,7 +132,7 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
     };
 
     const renderContent = () => {
-        const relevantPosts = DUMMY_POSTS.filter(p => p.category === category.id && p.sceneId === activeScene && p.author.location === selectedLocation);
+        const relevantPosts = posts.filter(p => p.category === category.id && p.sceneId === activeScene && p.author.location === selectedLocation);
         const relevantCompetitions = DUMMY_COMPETITIONS.filter(c => c.sceneId === activeScene); // Competitions are national, not filtered by location
         const relevantJobs = DUMMY_JOBS.filter(j => j.sceneId === activeScene && (j.location === selectedLocation || j.type === '远程'));
         const relevantActivities = DUMMY_VOLUNTEER_ACTIVITIES.filter(v => v.sceneId === activeScene && (v.location === selectedLocation || v.location === '线上'));

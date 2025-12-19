@@ -460,6 +460,7 @@ const App: React.FC = () => {
         if (activeCategory) {
             return <CategoryDetailScreen 
                         category={activeCategory} 
+                        posts={posts}
                         onBack={handleCloseCategory} 
                         onSendApplication={handleSendApplication}
                         appliedIds={appliedIds}
@@ -518,6 +519,7 @@ const App: React.FC = () => {
             case 'home':
                 return <HomeScreen 
                             user={currentUser} 
+                            posts={posts}
                             onCategorySelect={handleOpenCategory} 
                             onAiButtonClick={() => setIsAiScreenOpen(true)} 
                             onSearch={handleSearch} 
@@ -525,6 +527,8 @@ const App: React.FC = () => {
                             selectedLocation={selectedLocation}
                             onLocationChange={handleLocationChange}
                             onQuickPost={handleQuickPost}
+                            onPostSelect={setActivePost}
+                            onAuthorClick={handleViewPartnerProfile}
                         />;
             case 'feed':
                 return <FeedScreen 
@@ -568,6 +572,7 @@ const App: React.FC = () => {
             default:
                 return <HomeScreen 
                             user={currentUser} 
+                            posts={posts}
                             onCategorySelect={handleOpenCategory} 
                             onAiButtonClick={() => setIsAiScreenOpen(true)} 
                             onSearch={handleSearch} 
@@ -575,6 +580,8 @@ const App: React.FC = () => {
                             selectedLocation={selectedLocation}
                             onLocationChange={handleLocationChange}
                             onQuickPost={handleQuickPost}
+                            onPostSelect={setActivePost}
+                            onAuthorClick={handleViewPartnerProfile}
                         />;
         }
     };

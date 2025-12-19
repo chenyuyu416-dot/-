@@ -8,13 +8,13 @@ interface PostScreenProps {
   isOpen: boolean;
   onClose: () => void;
   onAddPost: (post: Post) => void;
-  // FIX: Add initial props to fix type error from App.tsx
   initialCategoryId?: string;
   initialSceneId?: string;
 }
 
 const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost, initialCategoryId, initialSceneId }) => {
-  const [selectedCategory, setSelectedCategory] = useState(DUMMY_CATEGORIES[0].id);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId || DUMMY_CATEGORIES[0].id);
+  const [selectedSceneId, setSelectedSceneId] = useState(initialSceneId || '');
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
@@ -22,12 +22,24 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost, ini
   const [videoName, setVideoName] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  // FIX: Use useEffect to set the initial category when the modal is opened via quick post.
   useEffect(() => {
     if (isOpen) {
-      setSelectedCategory(initialCategoryId || DUMMY_CATEGORIES[0].id);
+      const categoryId = initialCategoryId || DUMMY_CATEGORIES[0].id;
+      setSelectedCategoryId(categoryId);
+      const category = DUMMY_CATEGORIES.find(c => c.id === categoryId);
+      const sceneId = initialSceneId || category?.scenes[0]?.id || '';
+      setSelectedSceneId(sceneId);
+    } else {
+      // Reset form on close
+      setTitle('');
+      setContent('');
+      setTags('');
+      setImagePreview(null);
+      setVideoName(null);
+      setFileName(null);
     }
-  }, [isOpen, initialCategoryId]);
+  }, [isOpen, initialCategoryId, initialSceneId]);
+
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video' | 'file') => {
     const file = e.target.files?.[0];
@@ -56,9 +68,8 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost, ini
     const newPost: Post = {
       id: `p${Date.now()}`,
       author: DUMMY_USERS.currentUser,
-      category: selectedCategory,
-      // FIX: Add sceneId to the created post object.
-      sceneId: initialSceneId,
+      category: selectedCategoryId,
+      sceneId: selectedSceneId,
       title,
       content,
       tags: tags.split(/[,，\s]+/).filter(Boolean),
@@ -68,14 +79,11 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost, ini
       image: imagePreview || undefined,
     };
     onAddPost(newPost);
-    // Reset form
-    setTitle('');
-    setContent('');
-    setTags('');
-    setImagePreview(null);
   };
 
   if (!isOpen) return null;
+
+  const scenesForCategory = DUMMY_CATEGORIES.find(c => c.id === selectedCategoryId)?.scenes || [];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
@@ -88,18 +96,37 @@ const PostScreen: React.FC<PostScreenProps> = ({ isOpen, onClose, onAddPost, ini
         </header>
 
         <main className="flex-1 p-4 overflow-y-auto space-y-4">
-          <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">选择板块</label>
-            <select
-              id="category"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              {DUMMY_CATEGORIES.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.title}</option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">选择板块</label>
+              <select
+                id="category"
+                value={selectedCategoryId}
+                onChange={(e) => {
+                    setSelectedCategoryId(e.target.value);
+                    const firstScene = DUMMY_CATEGORIES.find(c => c.id === e.target.value)?.scenes[0];
+                    setSelectedSceneId(firstScene?.id || '');
+                }}
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {DUMMY_CATEGORIES.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.title}</option>
+                ))}
+              </select>
+            </div>
+             <div>
+              <label htmlFor="scene" className="block text-sm font-medium text-gray-700 mb-1">选择场景</label>
+              <select
+                id="scene"
+                value={selectedSceneId}
+                onChange={(e) => setSelectedSceneId(e.target.value)}
+                className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {scenesForCategory.map(scene => (
+                  <option key={scene.id} value={scene.id}>{scene.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div>
