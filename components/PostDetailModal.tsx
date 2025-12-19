@@ -1,28 +1,24 @@
 
 import React, { useState } from 'react';
 import { Post, Comment } from '../types';
-import { DUMMY_COMMENTS, DUMMY_USERS } from '../constants';
+import { DUMMY_USERS } from '../constants';
 import { X, Heart, MessageSquare, Send } from './Icons';
 
 interface PostDetailModalProps {
   post: Post;
+  comments: Comment[];
   onClose: () => void;
+  isLiked: boolean;
+  onToggleLike: () => void;
+  onAddComment: (postId: string, text: string) => void;
 }
 
-const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, onClose }) => {
-    const [comments, setComments] = useState<Comment[]>(DUMMY_COMMENTS.filter(c => c.postId === post.id));
+const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, comments, onClose, isLiked, onToggleLike, onAddComment }) => {
     const [newComment, setNewComment] = useState('');
 
     const handleAddComment = () => {
         if(newComment.trim() === '') return;
-        const comment: Comment = {
-            id: `c${Date.now()}`,
-            postId: post.id,
-            author: DUMMY_USERS.currentUser,
-            text: newComment,
-            timestamp: '刚刚'
-        };
-        setComments([...comments, comment]);
+        onAddComment(post.id, newComment.trim());
         setNewComment('');
     };
 
@@ -49,6 +45,19 @@ const PostDetailModal: React.FC<PostDetailModalProps> = ({ post, onClose }) => {
                         {post.image && <img src={post.image} alt="Post" className="rounded-lg w-full" />}
                         <div className="flex flex-wrap gap-2 mt-3">
                             {post.tags.map(tag => <span key={tag} className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">#{tag}</span>)}
+                        </div>
+                        <div className="flex items-center space-x-6 mt-4 text-gray-600">
+                            <button 
+                                onClick={onToggleLike} 
+                                className={`flex items-center space-x-1 transition-colors ${isLiked ? 'text-red-500' : 'text-gray-600 hover:text-red-500'}`}
+                            >
+                                <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                                <span>{post.likes}</span>
+                            </button>
+                            <div className="flex items-center space-x-1">
+                                <MessageSquare className="w-5 h-5" />
+                                <span>{comments.length}</span>
+                            </div>
                         </div>
                     </div>
 

@@ -1,13 +1,15 @@
 
 import React, { useState } from 'react';
-import { User, TeamRequest, SentApplication } from '../types';
-import { DUMMY_CHATS, DUMMY_TEAM_REQUESTS } from '../constants';
+import { User, TeamRequest, SentApplication, Chat } from '../types';
 import { Check, X } from '../components/Icons';
 import ApplicantProfileModal from '../components/ApplicantProfileModal';
 
 interface MessagesScreenProps {
-  onChatSelect: (user: User) => void;
+  chats: Chat[];
+  teamRequests: TeamRequest[];
+  onChatSelect: (chatId: string, user: User) => void;
   sentApplications: SentApplication[];
+  onRequestDecision: (reqId: string, accepted: boolean) => void;
 }
 
 const SentApplicationCard: React.FC<{ application: SentApplication }> = ({ application }) => {
@@ -37,15 +39,13 @@ const SentApplicationCard: React.FC<{ application: SentApplication }> = ({ appli
     );
 };
 
-const MessagesScreen: React.FC<MessagesScreenProps> = ({ onChatSelect, sentApplications }) => {
+const MessagesScreen: React.FC<MessagesScreenProps> = ({ chats, teamRequests, onChatSelect, sentApplications, onRequestDecision }) => {
   const [activeTab, setActiveTab] = useState<'chats' | 'requests' | 'sent'>('chats');
-  const [teamRequests, setTeamRequests] = useState<TeamRequest[]>(DUMMY_TEAM_REQUESTS);
   const [viewingApplicant, setViewingApplicant] = useState<TeamRequest | null>(null);
 
   const handleRequestDecision = (reqId: string, accepted: boolean) => {
-    setTeamRequests(prev => prev.filter(req => req.id !== reqId));
+    onRequestDecision(reqId, accepted);
     setViewingApplicant(null);
-    alert(accepted ? '已同意该申请！' : '已拒绝该申请。');
   };
   
   return (
@@ -75,10 +75,10 @@ const MessagesScreen: React.FC<MessagesScreenProps> = ({ onChatSelect, sentAppli
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {activeTab === 'chats' && DUMMY_CHATS.map(chat => (
+        {activeTab === 'chats' && chats.map(chat => (
             <div 
               key={chat.id} 
-              onClick={() => onChatSelect(chat.user)}
+              onClick={() => onChatSelect(chat.id, chat.user)}
               className="flex items-center p-3 bg-white rounded-lg shadow-sm cursor-pointer hover:bg-gray-50"
             >
               <div className="relative">

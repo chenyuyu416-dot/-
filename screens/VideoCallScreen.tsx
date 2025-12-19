@@ -3,13 +3,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Mic, MicOff, Video, VideoOff, ScreenShare, PhoneOff } from '../components/Icons';
 
 interface VideoCallScreenProps {
-  onEndCall: () => void;
+  onEndSession: (durationInSeconds: number) => void;
 }
 
-const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ onEndCall }) => {
+const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+    const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+    const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+}
+
+const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ onEndSession }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMicOn, setIsMicOn] = useState(true);
   const [isCameraOn, setIsCameraOn] = useState(true);
+  const [duration, setDuration] = useState(0);
 
   useEffect(() => {
     let stream: MediaStream;
@@ -21,16 +29,20 @@ const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ onEndCall }) => {
         }
       } catch (err) {
         console.error("Error accessing media devices.", err);
-        // Handle error: show a message to the user
       }
     };
 
     startCamera();
 
+    const timer = setInterval(() => {
+        setDuration(prev => prev + 1);
+    }, 1000);
+
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
+      clearInterval(timer);
     };
   }, []);
 
@@ -50,6 +62,10 @@ const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ onEndCall }) => {
     }
   };
 
+  const handleEndSession = () => {
+    onEndSession(duration);
+  }
+
   return (
     <div className="relative w-full h-screen bg-gray-900 text-white flex flex-col items-center justify-between">
       <div className="absolute inset-0">
@@ -59,7 +75,7 @@ const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ onEndCall }) => {
       
       <header className="relative z-10 w-full p-4 text-center">
         <h2 className="text-xl font-bold">线上自习室</h2>
-        <p className="text-sm opacity-80">专注模式已开启</p>
+        <p className="text-2xl font-mono tracking-wider mt-1">{formatTime(duration)}</p>
       </header>
 
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 text-center">
@@ -81,7 +97,7 @@ const VideoCallScreen: React.FC<VideoCallScreenProps> = ({ onEndCall }) => {
           <button className="p-3 bg-white/20 rounded-full backdrop-blur-sm">
             <ScreenShare className="w-6 h-6" />
           </button>
-          <button onClick={onEndCall} className="p-4 bg-red-500 rounded-full">
+          <button onClick={handleEndSession} className="p-4 bg-red-500 rounded-full">
             <PhoneOff className="w-6 h-6" />
           </button>
         </div>

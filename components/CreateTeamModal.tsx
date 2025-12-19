@@ -1,16 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { X } from './Icons';
 
 interface CreateTeamModalProps {
     onClose: () => void;
+    onCreateTeam: (teamData: { name: string; lookingFor: string }) => void;
 }
 
-const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ onClose }) => {
-    
+const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ onClose, onCreateTeam }) => {
+    const [teamName, setTeamName] = useState('');
+    const [lookingFor, setLookingFor] = useState('');
+
     const handleCreate = () => {
-        alert('队伍创建成功！');
-        onClose();
+        if (!teamName.trim() || !lookingFor.trim()) {
+            alert('队伍名称和招募需求不能为空！');
+            return;
+        }
+        onCreateTeam({ name: teamName, lookingFor });
     }
 
     return (
@@ -24,11 +30,25 @@ const CreateTeamModal: React.FC<CreateTeamModalProps> = ({ onClose }) => {
                 <main className="p-4 space-y-4">
                     <div>
                         <label htmlFor="teamName" className="block text-sm font-medium text-gray-700 mb-1">队伍名称</label>
-                        <input type="text" id="teamName" className="w-full p-2 border rounded-md" placeholder="e.g. AI赋能教育小队" />
+                        <input 
+                            type="text" 
+                            id="teamName" 
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            className="w-full p-2 border rounded-md" 
+                            placeholder="e.g. AI赋能教育小队" 
+                        />
                     </div>
                      <div>
                         <label htmlFor="lookingFor" className="block text-sm font-medium text-gray-700 mb-1">招募需求</label>
-                        <textarea id="lookingFor" rows={3} className="w-full p-2 border rounded-md" placeholder="e.g. 寻找一位熟悉Python的算法同学..."></textarea>
+                        <textarea 
+                            id="lookingFor" 
+                            rows={3} 
+                            value={lookingFor}
+                            onChange={(e) => setLookingFor(e.target.value)}
+                            className="w-full p-2 border rounded-md" 
+                            placeholder="e.g. 寻找一位熟悉Python的算法同学..."
+                        ></textarea>
                     </div>
                 </main>
 

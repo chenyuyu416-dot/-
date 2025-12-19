@@ -1,25 +1,28 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { X, UploadCloud, Check } from './Icons';
 
 interface UploadResumeModalProps {
     onClose: () => void;
+    resumeFile: File | null;
+    onFileChange: (file: File | null) => void;
 }
 
-const UploadResumeModal: React.FC<UploadResumeModalProps> = ({ onClose }) => {
-    const [fileName, setFileName] = useState<string | null>(null);
+const UploadResumeModal: React.FC<UploadResumeModalProps> = ({ onClose, resumeFile, onFileChange }) => {
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            setFileName(file.name);
-        }
+        onFileChange(file || null);
     };
 
     const handleSave = () => {
-        alert(`简历 "${fileName || '新简历'}" 已保存!`);
+        if (resumeFile) {
+            alert(`简历 "${resumeFile.name}" 已保存!`);
+        }
         onClose();
     };
+
+    const fileName = resumeFile?.name;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">

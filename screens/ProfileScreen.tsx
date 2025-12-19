@@ -1,25 +1,31 @@
 
 import React from 'react';
-import { User } from '../types';
-import { ShieldCheck, Award, Settings, BookOpen, Trophy, File, HelpCircle } from '../components/Icons';
+import { User, Post } from '../types';
+import { ShieldCheck, Award, Settings, BookOpen, Trophy, File, HelpCircle, Star } from '../components/Icons';
 
 interface ProfileScreenProps {
     user: User;
+    posts: Post[];
+    followingCount: number;
     onLogout: () => void;
     onSettingsClick: () => void;
-    onMyStuffClick: (view: 'posts' | 'partners') => void;
+    onMyStuffClick: (view: 'posts' | 'partners' | 'following' | 'followers' | 'notifications') => void;
     onEditTagsClick: () => void;
     onBadgesClick: () => void;
     onCertificationClick: () => void;
     onUploadResumeClick: () => void;
     onFeedbackClick: () => void;
+    onPartnerPointsClick: () => void;
 }
 
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSettingsClick, onMyStuffClick, onEditTagsClick, onBadgesClick, onCertificationClick, onUploadResumeClick, onFeedbackClick }) => {
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, posts, followingCount, onLogout, onSettingsClick, onMyStuffClick, onEditTagsClick, onBadgesClick, onCertificationClick, onUploadResumeClick, onFeedbackClick, onPartnerPointsClick }) => {
+    const myPostsCount = posts.filter(p => p.author.id === user.id).length;
+    
     const stats = [
-        { label: '搭力值', value: 1258, key: 'points' },
+        { label: '动态', value: myPostsCount, key: 'posts' },
+        { label: '关注', value: followingCount, key: 'following' },
+        { label: '粉丝', value: 15, key: 'followers' }, // Dummy value
         { label: '搭子', value: 12, key: 'partners' },
-        { label: '动态', value: 34, key: 'posts' },
     ];
 
     const badges = [
@@ -38,7 +44,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSetting
                 <div className="flex flex-col items-center mt-8">
                     <img src={user.avatar} alt={user.name} className="w-24 h-24 rounded-full border-4 border-white shadow-lg" />
                     <h1 className="text-2xl font-bold mt-4">{user.name}</h1>
-                    <p className="text-sm opacity-80 mt-1">{user.school} · {user.major}</p>
+                    <p className="text-sm opacity-80 mt-1">{user.school} · {user.major} · {user.location}</p>
                 </div>
             </header>
 
@@ -47,10 +53,9 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSetting
                     <div className="flex justify-around text-center">
                         {stats.map(stat => (
                             <button 
-                                key={stat.label}
-                                onClick={() => (stat.key === 'posts' || stat.key === 'partners') && onMyStuffClick(stat.key as 'posts' | 'partners')}
-                                className="disabled:cursor-default p-2 rounded-md hover:bg-gray-100"
-                                disabled={!['posts', 'partners'].includes(stat.key)}
+                                key={stat.key}
+                                onClick={() => onMyStuffClick(stat.key as any)}
+                                className="p-2 rounded-md hover:bg-gray-100"
                             >
                                 <p className="text-xl font-bold text-gray-800">{stat.value}</p>
                                 <p className="text-sm text-gray-500">{stat.label}</p>
@@ -83,6 +88,14 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ user, onLogout, onSetting
                         </div>
                     </button>
                     
+                    <button onClick={onPartnerPointsClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
+                        <h3 className="font-bold text-gray-800 mb-3">搭力值中心</h3>
+                         <div className="flex items-center text-gray-600">
+                             <Star className="w-5 h-5 mr-2 text-yellow-500"/>
+                             <span className="text-sm">查看我的搭力值: <span className="font-bold text-yellow-600">{user.partnerPoints || 0}</span></span>
+                         </div>
+                    </button>
+
                     <button onClick={onUploadResumeClick} className="w-full text-left p-4 bg-white rounded-xl shadow-lg hover:bg-gray-50">
                         <h3 className="font-bold text-gray-800 mb-3">我的简历</h3>
                          <div className="flex items-center text-gray-600">

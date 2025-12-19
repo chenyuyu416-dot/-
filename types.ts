@@ -10,8 +10,10 @@ export interface User {
   school?: string;
   major?: string;
   grade?: string;
+  location?: string;
   tags?: string[];
   preferences?: string[];
+  partnerPoints?: number;
 }
 
 export interface Message {
@@ -19,6 +21,8 @@ export interface Message {
   senderId: string;
   text: string;
   timestamp: string;
+  type?: 'text' | 'study_invite';
+  inviteStatus?: 'pending' | 'accepted' | 'cancelled';
 }
 
 export interface Chat {
@@ -65,6 +69,11 @@ export interface Competition {
     deadline: string;
     participants: string;
     details: string;
+    timePlan: string;
+    submissionRequirements: string;
+    teamRequirements: string;
+    creationGuidelines: string;
+    process: string;
 }
 
 export interface Job {
@@ -119,4 +128,28 @@ export interface SentApplication {
     recipient: User;
     status: 'pending' | 'accepted' | 'rejected';
     timestamp: string;
+}
+
+export interface AITask {
+    id: number;
+    text: string;
+    completed: boolean;
+    timeSpent: number | null; // in hours
+}
+
+export interface LikeNotification {
+    id: string;
+    user: User;
+    post: Post;
+    timestamp: string;
+}
+
+export interface Badge {
+    id: string;
+    label: string;
+    icon: ComponentType<{ className?: string }>;
+    color: string;
+    earned: boolean;
+    description: string;
+    isClaimable: boolean; 
 }

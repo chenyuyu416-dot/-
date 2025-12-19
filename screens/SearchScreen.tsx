@@ -1,13 +1,18 @@
 
-import React, { useState } from 'react';
-import { Post } from '../types';
+import React from 'react';
+import { Post, Comment } from '../types';
 import { DUMMY_POSTS } from '../constants';
 import { ChevronLeft } from '../components/Icons';
-import PostDetailModal from '../components/PostDetailModal';
 
 interface SearchScreenProps {
   query: string;
   onBack: () => void;
+  likedPostIds: Set<string>;
+  onToggleLike: (postId: string) => void;
+  selectedLocation: string;
+  comments: Comment[];
+  onAddComment: (postId: string, text: string) => void;
+  onPostSelect: (post: Post) => void;
 }
 
 const PostCard: React.FC<{ post: Post, onClick: () => void }> = ({ post, onClick }) => (
@@ -24,35 +29,32 @@ const PostCard: React.FC<{ post: Post, onClick: () => void }> = ({ post, onClick
     </div>
 );
 
-const SearchScreen: React.FC<SearchScreenProps> = ({ query, onBack }) => {
-    const [activePost, setActivePost] = useState<Post | null>(null);
-
+const SearchScreen: React.FC<SearchScreenProps> = ({ query, onBack, onPostSelect, selectedLocation }) => {
     const lowerCaseQuery = query.toLowerCase();
-    const results = DUMMY_POSTS.filter(post => 
-        post.title.toLowerCase().includes(lowerCaseQuery) ||
-        post.content.toLowerCase().includes(lowerCaseQuery) ||
-        post.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery))
-    );
+    const results = DUMMY_POSTS.filter(post => {
+        const inLocation = post.author.location === selectedLocation;
+        const matchesQuery = post.title.toLowerCase().includes(lowerCaseQuery) ||
+            post.content.toLowerCase().includes(lowerCaseQuery) ||
+            post.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery));
+        return inLocation && matchesQuery;
+    });
 
     return (
-        <>
-            <div className="flex flex-col h-full bg-gray-100">
-                <header className="sticky top-0 flex items-center p-3 bg-white/80 backdrop-blur-lg z-10 shadow-sm">
-                    <button onClick={onBack} className="text-gray-600 mr-3">
-                    <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <h2 className="text-lg font-bold text-gray-800">搜索结果: "{query}"</h2>
-                </header>
-                <main className="flex-1 overflow-y-auto p-4">
-                    {results.length > 0 ? (
-                        results.map(post => <PostCard key={post.id} post={post} onClick={() => setActivePost(post)} />)
-                    ) : (
-                        <p className="text-center text-gray-500 mt-8">没有找到相关内容</p>
-                    )}
-                </main>
-            </div>
-            {activePost && <PostDetailModal post={activePost} onClose={() => setActivePost(null)} />}
-        </>
+        <div className="flex flex-col h-full bg-gray-100">
+            <header className="sticky top-0 flex items-center p-3 bg-white/80 backdrop-blur-lg z-10 shadow-sm">
+                <button onClick={onBack} className="text-gray-600 mr-3">
+                <ChevronLeft className="w-6 h-6" />
+                </button>
+                <h2 className="text-lg font-bold text-gray-800">搜索结果: "{query}"</h2>
+            </header>
+            <main className="flex-1 overflow-y-auto p-4">
+                {results.length > 0 ? (
+                    results.map(post => <PostCard key={post.id} post={post} onClick={() => onPostSelect(post)} />)
+                ) : (
+                    <p className="text-center text-gray-500 mt-8">在 {selectedLocation} 没有找到相关内容</p>
+                )}
+            </main>
+        </div>
     );
 };
 

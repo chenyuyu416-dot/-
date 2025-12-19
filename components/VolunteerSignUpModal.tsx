@@ -6,13 +6,10 @@ import { VolunteerActivity } from '../types';
 interface VolunteerSignUpModalProps {
     activity: VolunteerActivity;
     onClose: () => void;
+    onConfirm: () => void;
 }
 
-const VolunteerSignUpModal: React.FC<VolunteerSignUpModalProps> = ({ activity, onClose }) => {
-    const handleConfirm = () => {
-        alert("报名成功！通知已发送至您的消息中心。");
-        onClose();
-    };
+const VolunteerSignUpModal: React.FC<VolunteerSignUpModalProps> = ({ activity, onClose, onConfirm }) => {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center p-4">
@@ -29,7 +26,7 @@ const VolunteerSignUpModal: React.FC<VolunteerSignUpModalProps> = ({ activity, o
                     <p><span className="font-semibold">招募人数:</span> {activity.required}人</p>
                 </main>
                 <footer className="p-4 border-t">
-                    <button onClick={handleConfirm} className="w-full py-2 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600">
+                    <button onClick={onConfirm} className="w-full py-2 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600">
                         确认报名
                     </button>
                 </footer>

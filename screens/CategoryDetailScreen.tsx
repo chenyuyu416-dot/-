@@ -1,9 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Category, Post, Competition, Job, VolunteerActivity } from '../types';
-import { ChevronLeft, Users, Trophy, Briefcase } from '../components/Icons';
+import { ChevronLeft, Users, Trophy, Briefcase, Check } from '../components/Icons';
 import { DUMMY_POSTS, DUMMY_COMPETITIONS, DUMMY_JOBS, DUMMY_VOLUNTEER_ACTIVITIES } from '../constants';
-import CompetitionDetailModal from '../components/CompetitionDetailModal';
 import InterviewPrepModal from '../components/InterviewPrepModal';
 import PartnerDetailModal from '../components/PartnerDetailModal';
 import SelectResumeModal from '../components/SelectResumeModal';
@@ -12,11 +11,15 @@ import VolunteerSignUpModal from '../components/VolunteerSignUpModal';
 interface CategoryDetailScreenProps {
   category: Category;
   onBack: () => void;
-  onStartCall: () => void;
   onSendApplication: (post: Post) => void;
+  appliedIds: Set<string>;
+  onApply: (id: string) => void;
+  onStartAIInterview: () => void;
+  onCompetitionSelect: (competition: Competition) => void;
+  selectedLocation: string;
 }
 
-const PostCard: React.FC<{ post: Post, onApply: (post:Post) => void }> = ({ post, onApply }) => (
+const PostCard: React.FC<{ post: Post, onApply: (post:Post) => void, isApplied: boolean }> = ({ post, onApply, isApplied }) => (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
         <div className="flex items-center mb-2">
             <img src={post.author.avatar} alt={post.author.name} className="w-8 h-8 rounded-full mr-2" />
@@ -28,7 +31,14 @@ const PostCard: React.FC<{ post: Post, onApply: (post:Post) => void }> = ({ post
         <h4 className="font-bold text-gray-800 mb-1">{post.title}</h4>
         <p className="text-sm text-gray-600 line-clamp-2">{post.content}</p>
         <div className="flex justify-end mt-2">
-            <button onClick={() => onApply(post)} className="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full hover:bg-indigo-600">申请加入</button>
+            <button 
+                onClick={() => onApply(post)} 
+                disabled={isApplied}
+                className="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+                {isApplied && <Check className="w-3 h-3" />}
+                {isApplied ? '已申请' : '申请加入'}
+            </button>
         </div>
     </div>
 );
@@ -51,7 +61,7 @@ const CompetitionCard: React.FC<{ comp: Competition, onClick: () => void }> = ({
     </div>
 );
 
-const JobCard: React.FC<{ job: Job, onApply: () => void }> = ({ job, onApply }) => (
+const JobCard: React.FC<{ job: Job, onApply: () => void, isApplied: boolean }> = ({ job, onApply, isApplied }) => (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
         <div className="flex justify-between items-start">
             <div>
@@ -66,12 +76,19 @@ const JobCard: React.FC<{ job: Job, onApply: () => void }> = ({ job, onApply }) 
         </div>
         <div className="flex justify-end space-x-2 mt-3">
             <button onClick={() => alert('已收藏!')} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300">收藏</button>
-            <button onClick={onApply} className="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full hover:bg-indigo-600">一键投递</button>
+            <button 
+                onClick={onApply} 
+                disabled={isApplied}
+                className="text-xs bg-indigo-500 text-white px-3 py-1 rounded-full hover:bg-indigo-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+                {isApplied && <Check className="w-3 h-3" />}
+                {isApplied ? '已投递' : '一键投递'}
+            </button>
         </div>
     </div>
 );
 
-const VolunteerCard: React.FC<{ activity: VolunteerActivity, onSignUp: (activity: VolunteerActivity) => void }> = ({ activity, onSignUp }) => (
+const VolunteerCard: React.FC<{ activity: VolunteerActivity, onSignUp: (activity: VolunteerActivity) => void, isApplied: boolean }> = ({ activity, onSignUp, isApplied }) => (
     <div className="bg-white rounded-lg shadow p-4 mb-4">
         <h4 className="font-bold text-gray-800">{activity.title}</h4>
         <p className="text-sm text-gray-600 mt-1">{activity.organization}</p>
@@ -82,35 +99,64 @@ const VolunteerCard: React.FC<{ activity: VolunteerActivity, onSignUp: (activity
         </div>
         <div className="flex justify-end space-x-2 mt-3">
             <button onClick={() => alert('组队功能开发中!')} className="text-xs bg-gray-200 text-gray-700 px-3 py-1 rounded-full hover:bg-gray-300">组队</button>
-            <button onClick={() => onSignUp(activity)} className="text-xs bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600">一键报名</button>
+            <button 
+                onClick={() => onSignUp(activity)} 
+                disabled={isApplied}
+                className="text-xs bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+            >
+                 {isApplied && <Check className="w-3 h-3" />}
+                {isApplied ? '已报名' : '一键报名'}
+            </button>
         </div>
     </div>
 );
 
 
-const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, onBack, onStartCall, onSendApplication }) => {
+const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, onBack, onSendApplication, appliedIds, onApply, onStartAIInterview, onCompetitionSelect, selectedLocation }) => {
     const [activeScene, setActiveScene] = useState(category.scenes[0].id);
-    const [activeCompetition, setActiveCompetition] = useState<Competition | null>(null);
     const [isInterviewPrepOpen, setInterviewPrepOpen] = useState(false);
     const [applyingToPost, setApplyingToPost] = useState<Post | null>(null);
     const [isSelectResumeModalOpen, setSelectResumeModalOpen] = useState(false);
+    const [applyingToJob, setApplyingToJob] = useState<Job | null>(null);
     const [activeVolunteerActivity, setActiveVolunteerActivity] = useState<VolunteerActivity | null>(null);
+    
+    const handleJobApply = (job: Job) => {
+        setApplyingToJob(job);
+        setSelectResumeModalOpen(true);
+    };
+
+    const handleConfirmJobApply = () => {
+        if(applyingToJob) {
+            onApply(applyingToJob.id);
+            alert("简历已投递！");
+            setApplyingToJob(null);
+            setSelectResumeModalOpen(false);
+        }
+    };
+    
+    const handleConfirmVolunteerSignUp = () => {
+        if (activeVolunteerActivity) {
+            onApply(activeVolunteerActivity.id);
+            setActiveVolunteerActivity(null);
+            alert("报名成功！通知已发送至您的消息中心。");
+        }
+    };
 
     const renderContent = () => {
-        const relevantPosts = DUMMY_POSTS.filter(p => p.category === category.id && p.sceneId === activeScene);
-        const relevantCompetitions = DUMMY_COMPETITIONS.filter(c => c.sceneId === activeScene);
-        const relevantJobs = DUMMY_JOBS.filter(j => j.sceneId === activeScene);
-        const relevantActivities = DUMMY_VOLUNTEER_ACTIVITIES.filter(v => v.sceneId === activeScene);
+        const relevantPosts = DUMMY_POSTS.filter(p => p.category === category.id && p.sceneId === activeScene && p.author.location === selectedLocation);
+        const relevantCompetitions = DUMMY_COMPETITIONS.filter(c => c.sceneId === activeScene); // Competitions are national, not filtered by location
+        const relevantJobs = DUMMY_JOBS.filter(j => j.sceneId === activeScene && (j.location === selectedLocation || j.type === '远程'));
+        const relevantActivities = DUMMY_VOLUNTEER_ACTIVITIES.filter(v => v.sceneId === activeScene && (v.location === selectedLocation || v.location === '线上'));
         
         let content;
 
         switch(category.id) {
             case 'study':
             case 'hobby':
-                content = relevantPosts.map(post => <PostCard key={post.id} post={post} onApply={setApplyingToPost} />);
+                content = relevantPosts.map(post => <PostCard key={post.id} post={post} onApply={setApplyingToPost} isApplied={appliedIds.has(post.id)} />);
                 break;
             case 'competition':
-                content = relevantCompetitions.map(comp => <CompetitionCard key={comp.id} comp={comp} onClick={() => setActiveCompetition(comp)} />);
+                content = relevantCompetitions.map(comp => <CompetitionCard key={comp.id} comp={comp} onClick={() => onCompetitionSelect(comp)} />);
                 break;
             case 'career':
                 content = <>
@@ -118,24 +164,32 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
                         <Briefcase className="w-5 h-5"/>
                         <span>面试模拟</span>
                     </button>
-                    {relevantJobs.map(job => <JobCard key={job.id} job={job} onApply={() => setSelectResumeModalOpen(true)} />)}
+                    {relevantJobs.map(job => <JobCard key={job.id} job={job} onApply={() => handleJobApply(job)} isApplied={appliedIds.has(job.id)} />)}
                 </>;
                 break;
             case 'volunteer':
-                content = relevantActivities.map(act => <VolunteerCard key={act.id} activity={act} onSignUp={setActiveVolunteerActivity}/>);
+                content = relevantActivities.map(act => <VolunteerCard key={act.id} activity={act} onSignUp={setActiveVolunteerActivity} isApplied={appliedIds.has(act.id)} />);
                 break;
             default:
                 content = <p className="text-center text-gray-500 mt-8">暂无内容</p>;
         }
 
-        // Handle empty states
         if (Array.isArray(content) && content.length === 0) {
-            return <p className="text-center text-gray-500 mt-8">该分类下暂无内容</p>;
+             return <p className="text-center text-gray-500 mt-8">在 {selectedLocation} 地区，该分类下暂无内容</p>;
+        }
+        if (category.id === 'career' && relevantJobs.length === 0) {
+             return <>
+                <button onClick={() => setInterviewPrepOpen(true)} className="w-full flex items-center justify-center gap-2 p-3 mb-4 bg-white rounded-lg shadow font-semibold text-indigo-600 hover:bg-gray-50">
+                    <Briefcase className="w-5 h-5"/>
+                    <span>面试模拟</span>
+                </button>
+                <p className="text-center text-gray-500 mt-8">在 {selectedLocation} 地区，该分类下暂无内容</p>
+            </>;
         }
         return content;
     };
 
-    const handleSendApplication = () => {
+    const handleSendPostApplication = () => {
         if(applyingToPost) {
             onSendApplication(applyingToPost);
             setApplyingToPost(null);
@@ -171,11 +225,10 @@ const CategoryDetailScreen: React.FC<CategoryDetailScreenProps> = ({ category, o
                 {renderContent()}
             </main>
 
-            {activeCompetition && <CompetitionDetailModal competition={activeCompetition} onClose={() => setActiveCompetition(null)} />}
-            {isInterviewPrepOpen && <InterviewPrepModal onClose={() => setInterviewPrepOpen(false)} onStartCall={onStartCall} />}
-            {applyingToPost && <PartnerDetailModal user={applyingToPost.author} onClose={() => setApplyingToPost(null)} onApply={handleSendApplication} />}
-            {isSelectResumeModalOpen && <SelectResumeModal onClose={() => setSelectResumeModalOpen(false)} />}
-            {activeVolunteerActivity && <VolunteerSignUpModal activity={activeVolunteerActivity} onClose={() => setActiveVolunteerActivity(null)} />}
+            {isInterviewPrepOpen && <InterviewPrepModal onClose={() => setInterviewPrepOpen(false)} onStartAIInterview={onStartAIInterview} />}
+            {applyingToPost && <PartnerDetailModal user={applyingToPost.author} onClose={() => setApplyingToPost(null)} onApply={handleSendPostApplication} />}
+            {isSelectResumeModalOpen && <SelectResumeModal onClose={() => setSelectResumeModalOpen(false)} onConfirm={handleConfirmJobApply} />}
+            {activeVolunteerActivity && <VolunteerSignUpModal activity={activeVolunteerActivity} onClose={() => setActiveVolunteerActivity(null)} onConfirm={handleConfirmVolunteerSignUp} />}
         </div>
     );
 };

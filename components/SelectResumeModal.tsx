@@ -4,15 +4,12 @@ import { X, File, UploadCloud } from './Icons';
 
 interface SelectResumeModalProps {
     onClose: () => void;
+    onConfirm: () => void;
 }
 
-const SelectResumeModal: React.FC<SelectResumeModalProps> = ({ onClose }) => {
+const SelectResumeModal: React.FC<SelectResumeModalProps> = ({ onClose, onConfirm }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const handleApply = () => {
-        alert("简历已投递！");
-        onClose();
-    };
-
+    
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             alert(`已选择新简历: ${e.target.files[0].name}`);
@@ -42,7 +39,7 @@ const SelectResumeModal: React.FC<SelectResumeModalProps> = ({ onClose }) => {
                     <input id="resume-upload" ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
                 </main>
                 <footer className="p-4 border-t">
-                    <button onClick={handleApply} className="w-full py-2 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700">
+                    <button onClick={onConfirm} className="w-full py-2 bg-indigo-600 text-white font-bold rounded-lg shadow hover:bg-indigo-700">
                         确认投递
                     </button>
                 </footer>
